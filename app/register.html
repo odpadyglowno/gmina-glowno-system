@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja — Gmina Głowno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+    <style>
+        :root {
+            --forest: #1b3a2b;
+            --forest-2: #244c39;
+            --green: #2e7d32;
+            --green-bright: #43a047;
+            --mint: #e8f3ec;
+            --paper: #f6f8f5;
+            --ink: #1a241e;
+            --ink-soft: #5a6b60;
+            --danger: #c0492f;
+            --radius: 12px;
+            --shadow: 0 4px 16px rgba(27,58,43,0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--green);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+        }
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--forest);
+        }
+        .subtitle {
+            color: var(--ink-soft);
+            font-size: 14px;
+        }
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(27,58,43,0.1);
+        }
+        .form-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--forest);
+        }
+        .form-desc {
+            color: var(--ink-soft);
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .field {
+            margin-bottom: 18px;
+        }
+        .field-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            margin-bottom: 6px;
+        }
+        .field-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid rgba(27,58,43,0.15);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--ink);
+            background: #fff;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .field-input:focus {
+            border-color: var(--green-bright);
+            box-shadow: 0 0 0 3px rgba(67,160,71,0.1);
+        }
+        .field-input.err {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(192,73,47,0.08);
+        }
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .alert {
+            background: rgba(192,73,47,0.08);
+            border: 1px solid rgba(192,73,47,0.2);
+            color: var(--danger);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert.show {
+            display: flex;
+        }
+        .alert i {
+            font-size: 18px;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: var(--forest-2);
+            transform: translateY(-1px);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--ink-soft);
+        }
+        .login-link a {
+            color: var(--green);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 500px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="ti ti-home"></i>
+                </div>
+                <div class="logo-text">Gmina Głowno</div>
+            </div>
+            <div class="subtitle">System zgłoszeń mieszkańców</div>
+        </div>
+
+        <div class="card">
+            <div class="form-title">Zarejestruj się</div>
+            <div class="form-desc">Wypełnij formularz, aby zgłosić chęć korzystania z systemu Gminy Głowno. Twoje konto wymaga zatwierdzenia przez Urząd Gminy.</div>
+
+            <div class="alert" id="error-alert">
+                <i class="ti ti-alert-circle"></i>
+                <span id="error-msg"></span>
+            </div>
+
+            <form id="register-form">
+                <div class="row">
+                    <div class="field">
+                        <label class="field-label">Imię *</label>
+                        <input type="text" class="field-input" id="firstName" placeholder="Jan" required>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Nazwisko *</label>
+                        <input type="text" class="field-input" id="lastName" placeholder="Kowalski" required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Telefon *</label>
+                    <input type="tel" class="field-input" id="phone" placeholder="+48 123 456 789" required>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Email *</label>
+                    <input type="email" class="field-input" id="email" placeholder="jan.kowalski@example.pl" required>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Hasło *</label>
+                    <input type="password" class="field-input" id="password" placeholder="Minimum 6 znaków" minlength="6" required>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Powtórz hasło *</label>
+                    <input type="password" class="field-input" id="confirmPassword" placeholder="" required>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Miejscowość *</label>
+                    <input type="text" class="field-input" id="settlement" placeholder="Głowno" required>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Ulica *</label>
+                    <input type="text" class="field-input" id="street" placeholder="Główna" required>
+                </div>
+
+                <div class="row">
+                    <div class="field">
+                        <label class="field-label">Numer domu *</label>
+                        <input type="text" class="field-input" id="houseNumber" placeholder="15" required>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Numer lokalu</label>
+                        <input type="text" class="field-input" id="apartmentNumber" placeholder="3">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="submit-btn">
+                    <span>Zarejestruj się</span>
+                </button>
+            </form>
+
+            <div class="login-link">
+                Masz już konto? <a href="login.html">Zaloguj się</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oczekiwanie na zatwierdzenie — Gmina Głowno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+    <style>
+        :root {
+            --forest: #1b3a2b;
+            --forest-2: #244c39;
+            --green: #2e7d32;
+            --green-bright: #43a047;
+            --mint: #e8f3ec;
+            --paper: #f6f8f5;
+            --ink: #1a241e;
+            --ink-soft: #5a6b60;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--green);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+        }
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--forest);
+        }
+        .subtitle {
+            color: var(--ink-soft);
+            font-size: 14px;
+        }
+        .status-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            border: 1px solid rgba(27,58,43,0.1);
+            box-shadow: 0 4px 16px rgba(27,58,43,0.08);
+        }
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--mint);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: var(--green);
+        }
+        .status-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--forest);
+            margin-bottom: 10px;
+        }
+        .status-message {
+            color: var(--ink-soft);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        .status-details {
+            background: var(--mint);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: var(--ink);
+        }
+        .btn {
+            padding: 14px 20px;
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            background: var(--forest-2);
+            transform: translateY(-1px);
+        }
+        .btn-logout {
+            background: transparent;
+            color: var(--ink-soft);
+            border: 1px solid rgba(27,58,43,0.2);
+        }
+        .btn-logout:hover {
+            background: rgba(27,58,43,0.05);
+        }
+        .contact-info {
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--ink-soft);
+        }
+        .contact-info a {
+            color: var(--green);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="ti ti-home"></i>
+                </div>
+                <div class="logo-text">Gmina Głowno</div>
+            </div>
+            <div class="subtitle">System mieszkańców</div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-icon">
+                <i class="ti ti-clock"></i>
+            </div>
+            
+            <div class="status-title">Konto oczekuje na zatwierdzenie</div>
+            
+            <div class="status-message">
+                Twoje zgłoszenie zostało przesłane do Urzędu Gminy Głowno.<br>
+                Administrator sprawdzi Twoje dane i zatwierdzi dostęp do systemu.
+            </div>
+
+            <div class="status-details">
+                <p><strong>Proces zatwierdzenia:</strong></p>
+                <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
+                    <li><i class="ti ti-check" style="color: var(--green);"></i> Zgłoszenie zostało zarejestrowane</li>
+                    <li><i class="ti ti-clock" style="color: var(--ink-soft);"></i> Administrator weryfikuje dane</li>
+                    <li><i class="ti ti-user-check" style="color: var(--green);"></i> Po zatwierdzeniu otrzymasz dostęp</li>
+                </ul>
+            </div>
+
+            <p style="color: var(--ink-soft); font-size: 14px; margin-bottom: 20px;">
+                Przewidywany czas zatwierdzenia: <strong>24-48 godzin</strong>
+            </p>
+
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="btn btn-logout" id="logout-btn">
+                    <i class="ti ti-logout"></i>
+                    Wyloguj się
+                </button>
+            </div>
+
+            <div class="contact-info">
+                Jeśli potrzebujesz pomocy: <a href="mailto:urzad@gmina-glowno.pl">urzad@gmina-glowno.pl</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/auth-check.js"></script>
+    <script type="module">
+        // Import Firebase Auth
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { firebaseConfig, app } from "../firebase/firebase-config.js";
+        
+        const auth = getAuth(app);
+        
+        // Wylogowanie
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Wylogowanie nie powiodło się:', error);
+            });
+        });
+    </script>
+</body>
+</html>

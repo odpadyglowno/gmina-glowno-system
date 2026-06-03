@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Administratora — Gmina Głowno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+:root{
+  --forest:#1b3a2b;
+  --forest-2:#244c39;
+  --green:#2e7d32;
+  --green-bright:#43a047;
+  --leaf:#7cb342;
+  --mint:#e8f3ec;
+  --mint-2:#f2f8f4;
+  --paper:#f6f8f5;
+  --ink:#1a241e;
+  --ink-soft:#5a6b60;
+  --ink-faint:#9aa89f;
+  --line:rgba(27,58,43,0.09);
+  --line-soft:rgba(27,58,43,0.05);
+  --gold:#c8a04e;
+  --blue:#2563a8;
+  --blue-bg:#e7f0f9;
+  --amber:#d98a2b;
+  --amber-bg:#fbf0e2;
+  --danger:#c0492f;
+  --danger-bg:#f9e8e4;
+  --radius:18px;
+  --radius-sm:12px;
+  --shadow-sm:0 1px 2px rgba(27,58,43,0.04), 0 2px 8px rgba(27,58,43,0.04);
+  --shadow:0 4px 24px rgba(27,58,43,0.07), 0 1px 3px rgba(27,58,43,0.05);
+  --shadow-lg:0 12px 48px rgba(27,58,43,0.12);
+  --nav-w:264px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* texture overlay */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle at 1px 1px, rgba(27,58,43,0.025) 1px, transparent 0);
+  background-size:22px 22px;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  position:fixed;top:0;left:0;height:100vh;width:var(--nav-w);
+  background:linear-gradient(170deg, var(--forest) 0%, var(--forest-2) 100%);
+  color:#fff;display:flex;flex-direction:column;z-index:100;
+  box-shadow:2px 0 30px rgba(27,58,43,0.18);
+}
+.sidebar::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 80% 0%, rgba(124,179,66,0.14), transparent 45%);
+}
+.brand{
+  display:flex;align-items:center;gap:13px;
+  padding:24px 22px 22px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  position:relative;z-index:1;
+}
+.brand-herb{width:42px;height:46px;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.25));}
+.brand-text{line-height:1.15;}
+.brand-name{font-family:'Fraunces',serif;font-size:18px;font-weight:600;letter-spacing:0.2px;}
+.brand-sub{font-size:10.5px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
+
+.nav{padding:18px 14px;flex:1;position:relative;z-index:1;overflow-y:auto;}
+.nav-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.4px;color:rgba(255,255,255,0.35);padding:0 12px;margin:18px 0 8px;}
+.nav-label:first-child{margin-top:0;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;margin-bottom:2px;border-radius:11px;
+  color:rgba(255,255,255,0.72);text-decoration:none;
+  font-size:14px;font-weight:400;cursor:pointer;
+  transition:all 0.22s cubic-bezier(.4,0,.2,1);position:relative;
+}
+.nav-item i{font-size:19px;width:22px;text-align:center;transition:transform 0.22s;}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:#fff;}
+.nav-item:hover i{transform:scale(1.12);}
+.nav-item.active{
+  background:linear-gradient(100deg, rgba(124,179,66,0.22), rgba(67,160,71,0.16));
+  color:#fff;font-weight:500;
+  box-shadow:inset 0 0 0 1px rgba(124,179,66,0.25);
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:-14px;top:50%;transform:translateY(-50%);
+  width:4px;height:22px;background:var(--leaf);border-radius:0 4px 4px 0;
+  box-shadow:0 0 12px rgba(124,179,66,0.6);
+}
+.nav-badge{margin-left:auto;background:var(--leaf);color:var(--forest);font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;}
+
+.nav-foot{padding:14px;border-top:1px solid rgba(255,255,255,0.08);position:relative;z-index:1;}
+.user{display:flex;align-items:center;gap:11px;padding:8px;border-radius:12px;transition:background 0.2s;}
+.user:hover{background:rgba(255,255,255,0.06);}
+.user-av{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--leaf),var(--green-bright));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(124,179,66,0.3);}
+.user-info{line-height:1.25;flex:1;min-width:0;}
+.user-name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-role{font-size:11px;color:rgba(255,255,255,0.5);}
+.user-out{background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:19px;padding:6px;border-radius:8px;transition:all 0.2s;}
+.user-out:hover{color:#fff;background:rgba(255,255,255,0.1);}
+
+/* ===== MAIN ===== */
+.main{margin-left:var(--nav-w);position:relative;z-index:1;min-height:100vh;}
+
+.topbar{
+  position:sticky;top:0;z-index:50;
+  height:74px;padding:0 32px;
+  background:rgba(246,248,245,0.82);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:18px;
+}
+.page-title{font-family:'Fraunces',serif;font-size:25px;font-weight:600;letter-spacing:-0.3px;}
+.page-meta{font-size:13px;color:var(--ink-faint);margin-top:1px;}
+.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.search{
+  display:flex;align-items:center;gap:9px;background:#fff;
+  border:1px solid var(--line);border-radius:12px;padding:9px 14px;width:240px;
+  transition:all 0.2s;box-shadow:var(--shadow-sm);
+}
+.search:focus-within{border-color:var(--green-bright);box-shadow:0 0 0 3px rgba(67,160,71,0.1);}
+.search i{font-size:17px;color:var(--ink-faint);}
+.search input{border:none;outline:none;font-family:inherit;font-size:13.5px;width:100%;background:none;color:var(--ink);}
+.icon-btn{
+  width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:#fff;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:19px;color:var(--ink-soft);transition:all 0.2s;box-shadow:var(--shadow-sm);position:relative;
+}
+.icon-btn:hover{border-color:var(--green-bright);color:var(--green);transform:translateY(-1px);}
+.icon-btn .ping{position:absolute;top:9px;right:10px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid #fff;}
+
+.content{padding:32px;max-width:1320px;}
+.page{display:none;animation:rise 0.5s cubic-bezier(.2,.7,.3,1) both;}
+.page.active{display:block;}
+@keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+/* hero greeting */
+.hero{
+  background:linear-gradient(120deg, var(--forest) 0%, var(--forest-2) 60%, #2c5840 100%);
+  border-radius:var(--radius);padding:28px 32px;margin-bottom:26px;
+  color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow);
+}
+.hero::before{
+  content:'';position:absolute;right:-40px;top:-60px;width:320px;height:320px;
+  background:radial-gradient(circle, rgba(124,179,66,0.25), transparent 70%);
+}
+.hero-herb{position:absolute;right:26px;bottom:-18px;width:130px;height:142px;opacity:0.14;}
+.hero-eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.55);margin-bottom:8px;}
+.hero-title{font-family:'Fraunces',serif;font-size:27px;font-weight:600;letter-spacing:-0.4px;margin-bottom:6px;position:relative;}
+.hero-sub{font-size:14.5px;color:rgba(255,255,255,0.7);position:relative;max-width:540px;line-height:1.5;}
+.hero-actions{display:flex;gap:10px;margin-top:18px;position:relative;flex-wrap:wrap;}
+
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:26px;}
+.stat{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;box-shadow:var(--shadow-sm);transition:all 0.3s cubic-bezier(.2,.7,.3,1);
+  position:relative;overflow:hidden;
+}
+.stat:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:transparent;}
+.stat-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.stat-ico{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:23px;}
+.stat-trend{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;display:flex;align-items:center;gap:3px;}
+.trend-up{background:var(--mint);color:var(--green);}
+.trend-flat{background:#eef1ec;color:var(--ink-faint);}
+.stat-value{font-family:'Fraunces',serif;font-size:38px;font-weight:600;line-height:1;letter-spacing:-1px;}
+.stat-label{font-size:13.5px;color:var(--ink-soft);margin-top:6px;font-weight:400;}
+.stat-spark{margin-top:14px;height:34px;display:flex;align-items:flex-end;gap:3px;}
+.spark-bar{flex:1;background:linear-gradient(to top, var(--mint), var(--leaf));border-radius:3px 3px 0 0;opacity:0.85;transition:opacity 0.2s;}
+.stat:hover .spark-bar{opacity:1;}
+
+/* layout grid */
+.grid-2{display:grid;grid-template-columns:1.62fr 1fr;gap:22px;}
+
+.panel{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:22px;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px;border-bottom:1px solid var(--line-soft);
+}
+.panel-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px;}
+.panel-title i{font-size:20px;color:var(--green);}
+.panel-link{font-size:13px;color:var(--green);font-weight:500;text-decoration:none;display:flex;align-items:center;gap:4px;cursor:pointer;transition:gap 0.2s;}
+.panel-link:hover{gap:7px;}
+.panel-body{padding:8px 24px 20px;}
+
+/* table */
+table{width:100%;border-collapse:collapse;}
+thead th{
+  text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;
+  color:var(--ink-faint);padding:12px 10px;border-bottom:1px solid var(--line);
+}
+tbody td{padding:14px 10px;border-bottom:1px solid var(--line-soft);font-size:14px;vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background 0.15s;cursor:pointer;}
+tbody tr:hover{background:var(--mint-2);}
+.cell-title{font-weight:500;}
+.cell-date{color:var(--ink-faint);font-size:13px;font-variant-numeric:tabular-nums;}
+
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:99px;font-size:12px;font-weight:600;}
+.tag-sent{background:var(--mint);color:var(--green);}
+.tag-sched{background:var(--amber-bg);color:var(--amber);}
+.tag-r1{background:var(--mint);color:var(--green);}
+.tag-r2{background:var(--blue-bg);color:var(--blue);}
+.tag-r3{background:var(--amber-bg);color:var(--amber);}
+.tag-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+.av{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+
+/* region progress */
+.region{margin-bottom:18px;}
+.region:last-child{margin-bottom:0;}
+.region-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.region-name{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;}
+.region-name small{color:var(--ink-faint);font-weight:400;font-size:12px;}
+.region-val{font-family:'Fraunces',serif;font-size:17px;font-weight:600;}
+.region-track{height:9px;background:#eef1ec;border-radius:99px;overflow:hidden;}
+.region-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--leaf));position:relative;transition:width 1s cubic-bezier(.2,.7,.3,1);}
+
+/* quick actions */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.qa{
+  display:flex;flex-direction:column;gap:10px;align-items:flex-start;
+  padding:18px;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:var(--mint-2);cursor:pointer;text-decoration:none;color:var(--ink);
+  transition:all 0.25s cubic-bezier(.2,.7,.3,1);
+}
+.qa:hover{transform:translateY(-2px);border-color:var(--green-bright);box-shadow:var(--shadow);background:#fff;}
+.qa-ico{width:42px;height:42px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;color:var(--green);box-shadow:var(--shadow-sm);transition:all 0.25s;}
+.qa:hover .qa-ico{background:var(--green);color:#fff;transform:scale(1.05);}
+.qa-title{font-weight:600;font-size:14px;}
+.qa-desc{font-size:12px;color:var(--ink-soft);line-height:1.4;}
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:11px;
+  font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;border:none;
+  transition:all 0.2s;white-space:nowrap;
+}
+.btn-light{background:rgba(255,255,255,0.16);color:#fff;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.2);}
+.btn-light:hover{background:rgba(255,255,255,0.26);}
+.btn-white{background:#fff;color:var(--forest);}
+.btn-white:hover{transform:translateY(-1px);box-shadow:var(--shadow);}
+.btn-green{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(46,125,50,0.25);}
+.btn-green:hover{background:var(--forest-2);transform:translateY(-1px);}
+.btn-ghost{background:#fff;color:var(--ink-soft);border:1px solid var(--line);}
+.btn-ghost:hover{border-color:var(--green-bright);color:var(--green);}
+
+/* generic placeholder pages */
+.placeholder{
+  background:#fff;border:1px dashed var(--line);border-radius:var(--radius);
+  padding:60px 30px;text-align:center;color:var(--ink-faint);
+}
+.placeholder i{font-size:48px;color:var(--mint);display:block;margin-bottom:16px;}
+.placeholder h3{font-family:'Fraunces',serif;font-size:20px;color:var(--ink-soft);font-weight:600;margin-bottom:8px;}
+.placeholder p{font-size:14px;max-width:380px;margin:0 auto;line-height:1.5;}
+
+/* toast */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--forest);color:#fff;padding:13px 24px;border-radius:13px;font-size:14px;font-weight:500;
+  z-index:999;opacity:0;transition:all 0.3s;box-shadow:var(--shadow-lg);pointer-events:none;display:flex;align-items:center;gap:9px;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast i{color:var(--leaf);font-size:18px;}
+
+@media(max-width:1040px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+}
+@media(max-width:760px){
+  :root{--nav-w:0px;}
+  .sidebar{transform:translateX(-264px);transition:transform 0.3s;}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .content{padding:18px;}
+  .topbar{padding:0 18px;}
+  .search{display:none;}
+  .stats{grid-template-columns:1fr;}
+  .qa-grid{grid-template-columns:1fr;}
+  .menu-toggle{display:flex!important;}
+}
+.menu-toggle{display:none;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <svg class="brand-herb" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10,10 H190 V150 C190,205 100,218 100,218 C100,218 10,205 10,150 Z" fill="#e8f3ec" stroke="#7cb342" stroke-width="3"/>
+      <path d="M10,165 Q100,125 190,165 V170 C190,195 100,218 100,218 C100,218 10,195 10,170 Z" fill="#7cb342" stroke="#fff" stroke-width="2"/>
+      <g transform="translate(70,28)">
+        <rect x="10" y="25" width="40" height="110" fill="#fff" stroke="#1b3a2b" stroke-width="2"/>
+        <path d="M5,25 V5 H15 V15 H25 V5 H35 V15 H45 V5 H55 V25 Z" fill="#fff" stroke="#1b3a2b" stroke-width="2"/>
+        <path d="M20,135 V110 Q30,100 40,110 V135" fill="#1b3a2b"/>
+        <rect x="25" y="55" width="10" height="20" rx="5" fill="#1b3a2b"/>
+      </g>
+    </svg>
+    <div class="brand-text">
+      <div class="brand-name">Gmina Głowno</div>
+      <div class="brand-sub">Panel Admina</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-label">Główne</div>
+    <a class="nav-item active" onclick="go('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a class="nav-item" onclick="window.location.href='pending-residents.html'"><i class="ti ti-user-check"></i> Zgłoszenia mieszkańców</a>
+    <a class="nav-item" onclick="go('notify',this)"><i class="ti ti-bell"></i> Powiadomienia <span class="nav-badge">3</span></a>
+    <div class="nav-label">Zarządzanie</div>
+    <a class="nav-item" onclick="go('schedule',this)"><i class="ti ti-recycle"></i> Harmonogram</a>
+    <a class="nav-item" onclick="go('payments',this)"><i class="ti ti-coins"></i> Opłaty</a>
+    <a class="nav-item" onclick="go('reports',this)"><i class="ti ti-chart-histogram"></i> Raporty</a>
+    <div class="nav-label">System</div>
+    <a class="nav-item" onclick="go('settings',this)"><i class="ti ti-settings"></i> Ustawienia</a>
+  </nav>
+
+  <div class="nav-foot">
+    <div class="user">
+      <div class="user-av">PP</div>
+      <div class="user-info">
+        <div class="user-name">Przemysław Plewka</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="user-out" title="Wyloguj"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="ti ti-menu-2"></i></button>
+    <div>
+      <div class="page-title" id="pt">Dashboard</div>
+      <div class="page-meta" id="pm">Niedziela, 31 maja 2026</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="search"><i class="ti ti-search"></i><input placeholder="Szukaj mieszkańca, komunikatu..."></div>
+      <button class="icon-btn" title="Powiadomienia"><i class="ti ti-bell"></i><span class="ping"></span></button>
+      <button class="icon-btn" title="Pomoc"><i class="ti ti-help-circle"></i></button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <section class="page active" id="page-dashboard">
+      <div class="hero">
+        <svg class="hero-herb" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10,10 H190 V150 C190,205 100,218 100,218 C100,218 10,205 10,150 Z" fill="#fff"/>
+          <g transform="translate(70,28)"><rect x="10" y="25" width="40" height="110" fill="#1b3a2b"/><path d="M5,25 V5 H15 V15 H25 V5 H35 V15 H45 V5 H55 V25 Z" fill="#1b3a2b"/></g>
+        </svg>
+        <div class="hero-eyebrow">Witaj ponownie</div>
+        <div class="hero-title">Dzień dobry, Przemysław</div>
+        <div class="hero-sub">System działa poprawnie. Dziś zaplanowano 7 odbiorów odpadów, a 18 powiadomień zostało wysłanych do mieszkańców.</div>
+        <div class="hero-actions">
+          <button class="btn btn-white" onclick="go('notify',document.querySelectorAll('.nav-item')[2])"><i class="ti ti-plus"></i> Nowe powiadomienie</button>
+          <button class="btn btn-light" onclick="go('schedule',document.querySelectorAll('.nav-item')[3])"><i class="ti ti-calendar"></i> Harmonogram</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-top">
+            <div class="stat-ico" style="background:var(--mint);color:var(--green);"><i class="ti ti-users"></i></div>
+            <span class="stat-trend trend-up"><i class="ti ti-trending-up" style="font-size:13px;"></i> +12</span>
+          </div>
+          <div class="stat-value">1 247</div>
+          <div class="stat-label">Zarejestrowanych mieszkańców</div>
+          <div class="stat-spark" data-spark="6,9,7,11,10,13,12,15,14,17,16,19"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">
+            <div class="stat-ico" style="background:var(--blue-bg);color:var(--blue);"><i class="ti ti-user-check"></i></div>
+            <span class="stat-trend trend-up"><i class="ti ti-trending-up" style="font-size:13px;"></i> 83%</span>
+          </div>
+          <div class="stat-value">1 034</div>
+          <div class="stat-label">Aktywnych użytkowników</div>
+          <div class="stat-spark" data-spark="10,11,9,12,13,12,14,13,15,16,15,17"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">
+            <div class="stat-ico" style="background:var(--amber-bg);color:var(--amber);"><i class="ti ti-send"></i></div>
+            <span class="stat-trend trend-flat">dziś</span>
+          </div>
+          <div class="stat-value">18</div>
+          <div class="stat-label">Powiadomień wysłanych</div>
+          <div class="stat-spark" data-spark="4,8,6,12,9,14,11,7,13,10,16,18"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">
+            <div class="stat-ico" style="background:var(--mint);color:var(--green);"><i class="ti ti-recycle"></i></div>
+            <span class="stat-trend trend-flat">jutro</span>
+          </div>
+          <div class="stat-value">7</div>
+          <div class="stat-label">Zaplanowanych odbiorów</div>
+          <div class="stat-spark" data-spark="3,5,4,6,5,7,6,8,5,7,6,7"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title"><i class="ti ti-mail"></i> Ostatnie komunikaty</div>
+            <a class="panel-link" onclick="go('notify',document.querySelectorAll('.nav-item')[2])">Zobacz wszystkie <i class="ti ti-arrow-right"></i></a>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead><tr><th style="width:120px;">Data</th><th>Tytuł</th><th style="width:140px;">Odbiorcy</th><th style="width:110px;">Status</th></tr></thead>
+              <tbody>
+                <tr><td class="cell-date">31.05.2026</td><td class="cell-title">Zmiana harmonogramu odbioru</td><td><span class="tag tag-r2"><span class="tag-dot"></span>Rejon 2</span></td><td><span class="tag tag-sent"><i class="ti ti-check" style="font-size:12px;"></i> Wysłano</span></td></tr>
+                <tr><td class="cell-date">30.05.2026</td><td class="cell-title">Przypomnienie o opłacie II kw.</td><td><span class="tag" style="background:#eef1ec;color:var(--ink-soft);"><span class="tag-dot"></span>Wszyscy</span></td><td><span class="tag tag-sent"><i class="ti ti-check" style="font-size:12px;"></i> Wysłano</span></td></tr>
+                <tr><td class="cell-date">28.05.2026</td><td class="cell-title">Jutro odbiór odpadów BIO</td><td><span class="tag tag-r1"><span class="tag-dot"></span>Rejon 1</span></td><td><span class="tag tag-sent"><i class="ti ti-check" style="font-size:12px;"></i> Wysłano</span></td></tr>
+                <tr><td class="cell-date">02.06.2026</td><td class="cell-title">Odbiór gabarytów — zapowiedź</td><td><span class="tag tag-r3"><span class="tag-dot"></span>Rejon 3</span></td><td><span class="tag tag-sched"><i class="ti ti-clock" style="font-size:12px;"></i> Zaplanowane</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title"><i class="ti ti-map-pin"></i> Mieszkańcy / rejon</div></div>
+          <div class="panel-body" style="padding-top:18px;">
+            <div class="region">
+              <div class="region-head"><div class="region-name">Rejon 1 <small>16 miejscowości</small></div><div class="region-val" style="color:var(--green);">524</div></div>
+              <div class="region-track"><div class="region-fill" style="width:0" data-w="68%"></div></div>
+            </div>
+            <div class="region">
+              <div class="region-head"><div class="region-name">Rejon 2 <small>8 miejscowości</small></div><div class="region-val" style="color:var(--blue);">438</div></div>
+              <div class="region-track"><div class="region-fill" style="width:0;background:linear-gradient(90deg,#2563a8,#4d8fd6);" data-w="56%"></div></div>
+            </div>
+            <div class="region">
+              <div class="region-head"><div class="region-name">Rejon 3 <small>9 miejscowości</small></div><div class="region-val" style="color:var(--amber);">285</div></div>
+              <div class="region-track"><div class="region-fill" style="width:0;background:linear-gradient(90deg,#d98a2b,#e8b15f);" data-w="37%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title"><i class="ti ti-bolt"></i> Szybkie akcje</div></div>
+        <div class="panel-body" style="padding-top:18px;">
+          <div class="qa-grid" style="grid-template-columns:repeat(4,1fr);">
+            <a class="qa" onclick="go('notify',document.querySelectorAll('.nav-item')[2])"><div class="qa-ico"><i class="ti ti-message-plus"></i></div><div class="qa-title">Nowy komunikat</div><div class="qa-desc">Wyślij powiadomienie do mieszkańców</div></a>
+            <a class="qa" onclick="go('schedule',document.querySelectorAll('.nav-item')[3])"><div class="qa-ico"><i class="ti ti-calendar-plus"></i></div><div class="qa-title">Edytuj harmonogram</div><div class="qa-desc">Zaktualizuj terminy odbioru</div></a>
+            <a class="qa" onclick="go('residents',document.querySelectorAll('.nav-item')[1])"><div class="qa-ico"><i class="ti ti-user-plus"></i></div><div class="qa-title">Dodaj mieszkańca</div><div class="qa-desc">Zarejestruj nowego użytkownika</div></a>
+            <a class="qa" onclick="go('reports',document.querySelectorAll('.nav-item')[5])"><div class="qa-ico"><i class="ti ti-file-download"></i></div><div class="qa-title">Eksport raportu</div><div class="qa-desc">Pobierz dane w formacie CSV</div></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== OTHER PAGES (placeholders) ===== -->
+    <section class="page" id="page-residents">
+      <div class="placeholder"><i class="ti ti-users"></i><h3>Mieszkańcy</h3><p>Tutaj pojawi się pełna lista mieszkańców z filtrowaniem po rejonach, wyszukiwarką i profilami — gotowa do podłączenia z bazą Firebase.</p></div>
+    </section>
+    <section class="page" id="page-notify">
+      <div class="placeholder"><i class="ti ti-bell"></i><h3>Powiadomienia</h3><p>Moduł wysyłki powiadomień push z szablonami, wyborem odbiorców i podglądem na telefonie.</p></div>
+    </section>
+    <section class="page" id="page-schedule">
+      <div class="placeholder"><i class="ti ti-recycle"></i><h3>Harmonogram</h3><p>Edytor harmonogramu wywozu odpadów dla wszystkich rejonów i miesięcy, synchronizowany z aplikacją mieszkańców.</p></div>
+    </section>
+    <section class="page" id="page-payments">
+      <div class="placeholder"><i class="ti ti-coins"></i><h3>Opłaty</h3><p>Zarządzanie stawkami, terminami płatności i historią wpłat mieszkańców.</p></div>
+    </section>
+    <section class="page" id="page-reports">
+      <div class="placeholder"><i class="ti ti-chart-histogram"></i><h3>Raporty</h3><p>Statystyki skuteczności doręczeń, aktywności mieszkańców i eksport danych.</p></div>
+    </section>
+    <section class="page" id="page-settings">
+      <div class="placeholder"><i class="ti ti-settings"></i><h3>Ustawienia</h3><p>Konfiguracja systemu, kody dostępu dla urzędników i zarządzanie administratorami.</p></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBuuzbs5EV8FUWeP234d51sne5aXTvgtw0",
+  authDomain: "gmina-glowno.firebaseapp.com",
+  projectId: "gmina-glowno",
+  storageBucket: "gmina-glowno.firebasestorage.app",
+  messagingSenderId: "891642263058",
+  appId: "1:891642263058:web:5892b802e12fe91fedcacb",
+  measurementId: "G-4JLD4MM96V"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+/* ===== ZABEZPIECZENIE DOSTĘPU ===== */
+// Ukryj cały interfejs na początku (zapobiega migotaniu)
+document.body.style.opacity = '0';
+
+onAuthStateChanged(auth, (user) => {
+  if(!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  // Użytkownik zalogowany - pokaż interfejs
+  document.body.style.opacity = '1';
+});
+
+const TITLES={dashboard:'Dashboard',residents:'Mieszkańcy',notify:'Powiadomienia',schedule:'Harmonogram',payments:'Opłaty',reports:'Raporty',settings:'Ustawienia'};
+function go(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('pt').textContent=TITLES[id];
+  document.getElementById('sidebar').classList.remove('open');
+  if(id==='dashboard')setTimeout(animate,50);
+}
+function animate(){
+  document.querySelectorAll('.region-fill').forEach(f=>{const w=f.getAttribute('data-w');if(w)setTimeout(()=>f.style.width=w,100);});
+  document.querySelectorAll('.stat-spark').forEach(s=>{
+    if(s.dataset.done)return; s.dataset.done='1';
+    const vals=s.dataset.spark.split(',').map(Number);const max=Math.max(...vals);
+    s.innerHTML=vals.map(v=>`<div class="spark-bar" style="height:0"></div>`).join('');
+    const bars=s.querySelectorAll('.spark-bar');
+    vals.forEach((v,i)=>setTimeout(()=>bars[i].style.height=(v/max*100)+'%',i*40));
+  });
+}
+let tT;
+function toast(m){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),2800);}
+document.querySelectorAll('.qa').forEach(q=>{});
+document.querySelector('.user-out').addEventListener('click',()=>{
+  signOut(auth).then(() => {
+    /* Usuń email TYLKO jeśli checkbox "Zapamiętaj mnie" NIE był zaznaczony */
+    const rememberMe = localStorage.getItem('gminaGlownoRememberMe');
+    if(rememberMe !== 'true') {
+      localStorage.removeItem('gminaGlownoRememberedEmail');
+    }
+    /* ZAWSZE usuń flagę rememberMe */
+    localStorage.removeItem('gminaGlownoRememberMe');
+    window.location.href = 'login.html';
+  }).catch((error) => {
+    console.error('Wylogowanie nie powiodło się:', error);
+    toast('Wylogowanie nie powiodło się');
+  });
+});
+animate();
+</script>
+</body>
+</html>
