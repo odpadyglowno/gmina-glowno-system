@@ -291,6 +291,9 @@ tbody tr:hover{background:var(--mint-2);}
   .menu-toggle{display:flex!important;}
 }
 .menu-toggle{display:none;}
+.tabs{display:flex;gap:4px;margin-top:10px;}
+.tab-btn{background:none;border:1px solid var(--line);border-radius:8px;padding:7px 14px;font-size:13px;color:var(--ink-soft);cursor:pointer;transition:all 0.2s;}
+.tab-btn.active{background:var(--forest);color:#fff;border-color:var(--forest);font-weight:500;}
 </style>
 </head>
 <body>
@@ -317,7 +320,7 @@ tbody tr:hover{background:var(--mint-2);}
   <nav class="nav">
     <div class="nav-label">Główne</div>
     <a class="nav-item active" onclick="go('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-    <a class="nav-item" onclick="window.location.href='pending-residents.html'"><i class="ti ti-user-check"></i> Zgłoszenia mieszkańców</a>
+    <a class="nav-item" onclick="go('residents',this)"><i class="ti ti-users"></i> Mieszkańcy</a>
     <a class="nav-item" onclick="go('notify',this)"><i class="ti ti-bell"></i> Powiadomienia <span class="nav-badge">3</span></a>
     <div class="nav-label">Zarządzanie</div>
     <a class="nav-item" onclick="go('schedule',this)"><i class="ti ti-recycle"></i> Harmonogram</a>
@@ -463,9 +466,76 @@ tbody tr:hover{background:var(--mint-2);}
     </section>
 
     <!-- ===== OTHER PAGES (placeholders) ===== -->
-    <section class="page" id="page-residents">
-      <div class="placeholder"><i class="ti ti-users"></i><h3>Mieszkańcy</h3><p>Tutaj pojawi się pełna lista mieszkańców z filtrowaniem po rejonach, wyszukiwarką i profilami — gotowa do podłączenia z bazą Firebase.</p></div>
+    <section class="page" id="page-pending-residents">
+      <!-- Sekcja będzie ładowana dynamicznie przez loadPendingResidentsContent() -->
+      <div class="placeholder"><i class="ti ti-user-check"></i><h3>Zgłoszenia mieszkańców</h3><p>Sekcja będzie ładowana dynamicznie...</p></div>
     </section>
+    <section class="page" id="page-residents">
+      <div class="panel">
+        <div class="panel-head" style="flex-wrap:wrap;gap:12px;">
+          <div class="panel-title"><i class="ti ti-users"></i> Mieszkańcy</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="search" style="width:220px;"><i class="ti ti-search"></i><input id="residents-search" placeholder="Szukaj po imieniu, nazwisku, tel, email..." oninput="window.filterResidentsTable(this.value)"></div>
+          </div>
+          <div class="tabs" style="margin-top:0;width:100%;">
+            <button class="tab-btn active" onclick="loadResidentsTab('pending')">Zgłoszenia</button>
+            <button class="tab-btn" onclick="loadResidentsTab('approved')">Aktywni</button>
+            <button class="tab-btn" onclick="loadResidentsTab('rejected')">Odrzuceni</button>
+            <button class="tab-btn" onclick="loadResidentsTab('archived')">Archiwum</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Imię</th>
+                <th>Nazwisko</th>
+                <th>Telefon</th>
+                <th>Adres</th>
+                <th>Rejon</th>
+                <th>Status</th>
+                <th style="width:180px;">Akcje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-faint);">
+                <i class="ti ti-users" style="font-size:28px;display:block;margin-bottom:10px;"></i>Wybierz zakładkę aby załadować dane
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal odrzucenia -->
+    <div id="reject-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:var(--radius);padding:32px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);">
+        <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin-bottom:8px;">Odrzuć zgłoszenie</div>
+        <div style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;">Podaj powód odrzucenia (opcjonalnie):</div>
+        <textarea id="reject-reason-input" placeholder="Np. Niekompletne dane, błędny adres..." style="width:100%;min-height:100px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px;font-family:inherit;font-size:14px;resize:vertical;outline:none;"></textarea>
+        <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+          <button class="btn btn-ghost" onclick="window.closeRejectModal()">Anuluj</button>
+          <button class="btn" style="background:var(--danger);color:#fff;" onclick="window.confirmReject()"><i class="ti ti-x"></i> Odrzuć</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal detali mieszkańca -->
+    <div id="resident-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#fff;border-radius:var(--radius);width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);">
+        <!-- Nagłówek — zawsze widoczny -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:24px 28px 16px;border-bottom:1px solid var(--line);flex-shrink:0;">
+          <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:600;">Dane mieszkańca</div>
+          <button onclick="window.closeResidentModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink-faint);padding:4px;line-height:1;"><i class="ti ti-x"></i></button>
+        </div>
+        <!-- Treść — przewijalna -->
+        <div id="resident-modal-body" style="overflow-y:auto;padding:20px 28px;flex:1;"></div>
+        <!-- Stopka — zawsze widoczna -->
+        <div style="padding:16px 28px;border-top:1px solid var(--line);text-align:right;flex-shrink:0;">
+          <button class="btn btn-ghost" onclick="window.closeResidentModal()">Zamknij</button>
+        </div>
+      </div>
+    </div>
     <section class="page" id="page-notify">
       <div class="placeholder"><i class="ti ti-bell"></i><h3>Powiadomienia</h3><p>Moduł wysyłki powiadomień push z szablonami, wyborem odbiorców i podglądem na telefonie.</p></div>
     </section>
@@ -487,9 +557,98 @@ tbody tr:hover{background:var(--mint-2);}
 
 <div id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
+<script>
+// Globalne funkcje SPA dostępne dla onclick
+const TITLES = {
+  dashboard: 'Dashboard',
+  'pending-residents': 'Zgłoszenia mieszkańców',
+  residents: 'Mieszkańcy',
+  notify: 'Powiadomienia',
+  schedule: 'Harmonogram',
+  payments: 'Opłaty',
+  reports: 'Raporty',
+  settings: 'Ustawienia'
+};
+
+function go(id, el) {
+  // Ukryj wszystkie strony
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Pokaż wybraną stronę
+  const page = document.getElementById('page-' + id);
+  if (page) {
+    page.classList.add('active');
+  }
+  // Aktualizuj aktywne menu
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  // Aktualizuj tytuł strony
+  const titleElement = document.getElementById('pt');
+  if (titleElement && TITLES[id]) {
+    titleElement.textContent = TITLES[id];
+  }
+  // Zamknij sidebar na mobile
+  document.getElementById('sidebar').classList.remove('open');
+  // Jeśli dashboard, uruchom animacje
+  if (id === 'dashboard') {
+    setTimeout(animate, 50);
+  }
+  // Jeśli pending-residents, ładowanie dynamiczne
+  if (id === 'pending-residents' && typeof loadPendingResidentsContent === 'function') {
+    loadPendingResidentsContent();
+  }
+}
+
+function animate() {
+  // Animacja pasków regionów
+  document.querySelectorAll('.region-fill').forEach(f => {
+    const w = f.getAttribute('data-w');
+    if (w) setTimeout(() => f.style.width = w, 100);
+  });
+  // Animacja spark bars
+  document.querySelectorAll('.stat-spark').forEach(s => {
+    if (s.dataset.done) return;
+    s.dataset.done = '1';
+    const vals = s.dataset.spark.split(',').map(Number);
+    const max = Math.max(...vals);
+    s.innerHTML = vals.map(v => `<div class="spark-bar" style="height:0"></div>`).join('');
+    const bars = s.querySelectorAll('.spark-bar');
+    vals.forEach((v, i) => setTimeout(() => bars[i].style.height = (v / max * 100) + '%', i * 40));
+  });
+}
+
+let toastTimeout;
+function toast(m) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = m;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// loadResidentsTab i openResidentModal są ustawiane przez moduł Firebase poniżej
+// Placeholder żeby onclick nie rzucał błędu przed załadowaniem modułu
+function loadResidentsTab(status) {
+  console.warn('loadResidentsTab: moduł Firebase jeszcze nie załadowany');
+}
+function openResidentModal(id) {
+  console.warn('openResidentModal: moduł Firebase jeszcze nie załadowany');
+}
+
+// Wyszukiwanie w tabeli mieszkańców (filtrowanie po stronie klienta)
+window.filterResidentsTable = function(query) {
+  const q = query.toLowerCase().trim();
+  const rows = document.querySelectorAll('#page-residents tbody tr');
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+};
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuuzbs5EV8FUWeP234d51sne5aXTvgtw0",
@@ -503,51 +662,24 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 /* ===== ZABEZPIECZENIE DOSTĘPU ===== */
-// Ukryj cały interfejs na początku (zapobiega migotaniu)
 document.body.style.opacity = '0';
 
 onAuthStateChanged(auth, (user) => {
-  if(!user) {
+  if (!user) {
     window.location.href = 'login.html';
     return;
   }
-  // Użytkownik zalogowany - pokaż interfejs
   document.body.style.opacity = '1';
 });
 
-const TITLES={dashboard:'Dashboard',residents:'Mieszkańcy',notify:'Powiadomienia',schedule:'Harmonogram',payments:'Opłaty',reports:'Raporty',settings:'Ustawienia'};
-function go(id,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el)el.classList.add('active');
-  document.getElementById('pt').textContent=TITLES[id];
-  document.getElementById('sidebar').classList.remove('open');
-  if(id==='dashboard')setTimeout(animate,50);
-}
-function animate(){
-  document.querySelectorAll('.region-fill').forEach(f=>{const w=f.getAttribute('data-w');if(w)setTimeout(()=>f.style.width=w,100);});
-  document.querySelectorAll('.stat-spark').forEach(s=>{
-    if(s.dataset.done)return; s.dataset.done='1';
-    const vals=s.dataset.spark.split(',').map(Number);const max=Math.max(...vals);
-    s.innerHTML=vals.map(v=>`<div class="spark-bar" style="height:0"></div>`).join('');
-    const bars=s.querySelectorAll('.spark-bar');
-    vals.forEach((v,i)=>setTimeout(()=>bars[i].style.height=(v/max*100)+'%',i*40));
-  });
-}
-let tT;
-function toast(m){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),2800);}
-document.querySelectorAll('.qa').forEach(q=>{});
-document.querySelector('.user-out').addEventListener('click',()=>{
+// Obsługa wylogowania
+document.querySelector('.user-out').addEventListener('click', () => {
   signOut(auth).then(() => {
-    /* Usuń email TYLKO jeśli checkbox "Zapamiętaj mnie" NIE był zaznaczony */
     const rememberMe = localStorage.getItem('gminaGlownoRememberMe');
-    if(rememberMe !== 'true') {
-      localStorage.removeItem('gminaGlownoRememberedEmail');
-    }
-    /* ZAWSZE usuń flagę rememberMe */
+    if (rememberMe !== 'true') localStorage.removeItem('gminaGlownoRememberedEmail');
     localStorage.removeItem('gminaGlownoRememberMe');
     window.location.href = 'login.html';
   }).catch((error) => {
@@ -555,6 +687,477 @@ document.querySelector('.user-out').addEventListener('click',()=>{
     toast('Wylogowanie nie powiodło się');
   });
 });
+
+// ===== MODUŁ MIESZKAŃCÓW =====
+
+// Nadpisz placeholder — teraz mamy db
+window.loadResidentsTab = async function(status) {
+  const tbody = document.querySelector('#page-residents tbody');
+  if (!tbody) return;
+
+  // Aktywna zakładka
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.tab-btn[onclick="loadResidentsTab('${status}')"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // Pokaż ładowanie
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-faint);">
+    <i class="ti ti-loader" style="font-size:28px;display:block;margin-bottom:10px;"></i>Ładowanie danych...
+  </td></tr>`;
+
+  try {
+    const q = query(collection(db, 'residents'), where('status', '==', status));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      const labels = { pending: 'oczekujących zgłoszeń', approved: 'aktywnych mieszkańców', rejected: 'odrzuconych zgłoszeń' };
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-faint);">
+        <i class="ti ti-users" style="font-size:28px;display:block;margin-bottom:10px;"></i>Brak ${labels[status] || 'danych'}
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = '';
+    snapshot.forEach(docSnap => {
+      const r = docSnap.data();
+      const id = docSnap.id;
+      const address = [r.street, r.houseNumber, r.apartmentNumber ? '/' + r.apartmentNumber : '', r.settlement].filter(Boolean).join(' ') || r.address || '—';
+
+      let tagStyle = '', tagText = '';
+      if (status === 'approved') { tagStyle = 'background:var(--mint);color:var(--green)'; tagText = 'Aktywny'; }
+      else if (status === 'pending') { tagStyle = 'background:var(--amber-bg);color:var(--amber)'; tagText = 'Oczekujący'; }
+      else if (status === 'rejected') { tagStyle = 'background:var(--danger-bg);color:var(--danger)'; tagText = 'Odrzucony'; }
+
+      let actions = '';
+      if (status === 'pending') {
+        actions = `<div style="display:flex;gap:6px;">
+          <button class="btn btn-green" style="padding:6px 10px;font-size:12px;" onclick="window.approveResident('${id}')"><i class="ti ti-check"></i> Akceptuj</button>
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px;" onclick="window.openRejectModal('${id}')"><i class="ti ti-x"></i> Odrzuć</button>
+        </div>`;
+      } else {
+        actions = `<button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="window.openResidentModal('${id}')"><i class="ti ti-eye"></i> Detale</button>`;
+      }
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="cell-title">${r.firstName || '—'}</td>
+        <td>${r.lastName || '—'}</td>
+        <td>${r.phone || '—'}</td>
+        <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${address}</td>
+        <td>${r.rejon ? `<span class="tag" style="background:var(--mint-2);color:var(--forest);border:1px solid var(--line);">${r.rejon}</span>` : '<span style="color:var(--ink-faint);">—</span>'}</td>
+        <td><span class="tag" style="${tagStyle}">${tagText}</span></td>
+        <td>${actions}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error('Błąd pobierania mieszkańców:', err);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--danger);">
+      <i class="ti ti-alert-circle" style="font-size:28px;display:block;margin-bottom:10px;"></i>Błąd: ${err.message}
+    </td></tr>`;
+  }
+};
+
+// Zatwierdzenie mieszkańca
+window.approveResident = async function(residentId) {
+  try {
+    const residentRef = doc(db, 'residents', residentId);
+    const residentDoc = await getDoc(residentRef);
+    if (!residentDoc.exists()) { toast('Nie znaleziono zgłoszenia.'); return; }
+    const data = residentDoc.data();
+
+    await updateDoc(residentRef, { status: 'approved', approvedAt: new Date().toISOString() });
+    if (data.userId) {
+      await updateDoc(doc(db, 'users', data.userId), { status: 'approved', role: 'resident', approvedAt: new Date().toISOString(), approvedBy: auth.currentUser.uid });
+    }
+    await addDoc(collection(db, 'adminActions'), {
+      action: 'approve', residentId, residentEmail: data.email,
+      adminId: auth.currentUser.uid, timestamp: new Date().toISOString(),
+      previousStatus: 'pending', newStatus: 'approved'
+    });
+
+    toast(`Zatwierdzono: ${data.firstName} ${data.lastName}`);
+    window.loadResidentsTab('pending');
+  } catch (err) {
+    console.error(err);
+    toast('Błąd zatwierdzania. Spróbuj ponownie.');
+  }
+};
+
+// Modal odrzucenia
+let _rejectId = null;
+window.openRejectModal = function(residentId) {
+  _rejectId = residentId;
+  document.getElementById('reject-modal').style.display = 'flex';
+  document.getElementById('reject-reason-input').value = '';
+};
+window.closeRejectModal = function() {
+  document.getElementById('reject-modal').style.display = 'none';
+  _rejectId = null;
+};
+window.confirmReject = async function() {
+  if (!_rejectId) return;
+  const reason = document.getElementById('reject-reason-input').value.trim() || 'Nie podano przyczyny';
+  try {
+    const residentRef = doc(db, 'residents', _rejectId);
+    const residentDoc = await getDoc(residentRef);
+    if (!residentDoc.exists()) { toast('Nie znaleziono zgłoszenia.'); return; }
+    const data = residentDoc.data();
+
+    await updateDoc(residentRef, { status: 'rejected', rejectionReason: reason });
+    if (data.userId) {
+      await updateDoc(doc(db, 'users', data.userId), { status: 'rejected', rejectionReason: reason });
+    }
+    await addDoc(collection(db, 'adminActions'), {
+      action: 'reject', residentId: _rejectId, residentEmail: data.email,
+      adminId: auth.currentUser.uid, timestamp: new Date().toISOString(),
+      reason, previousStatus: 'pending', newStatus: 'rejected'
+    });
+
+    window.closeRejectModal();
+    toast(`Odrzucono: ${data.firstName} ${data.lastName}`);
+    window.loadResidentsTab('pending');
+  } catch (err) {
+    console.error(err);
+    toast('Błąd odrzucania. Spróbuj ponownie.');
+  }
+};
+
+// ===== MODAL DETALI — z edycją, usuwaniem, historią, Google Maps =====
+
+let _currentResidentId = null;
+let _currentResidentStatus = null;
+
+window.openResidentModal = async function(residentId) {
+  _currentResidentId = residentId;
+  try {
+    const residentDoc = await getDoc(doc(db, 'residents', residentId));
+    if (!residentDoc.exists()) { toast('Nie znaleziono danych.'); return; }
+    const r = residentDoc.data();
+    _currentResidentStatus = r.status;
+    await _renderResidentModal(residentId, r);
+    document.getElementById('resident-modal').style.display = 'flex';
+  } catch (err) {
+    console.error(err);
+    toast('Błąd pobierania danych.');
+  }
+};
+
+async function _renderResidentModal(residentId, r) {
+  const addressFromFields = [r.street, r.houseNumber, r.apartmentNumber ? '/' + r.apartmentNumber : '', r.settlement].filter(Boolean).join(' ');
+  const address = r.address || addressFromFields || '—';
+  const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address + ', Polska');
+
+  let statusTag = '';
+  if (r.status === 'approved') statusTag = '<span class="tag" style="background:var(--mint);color:var(--green)">Aktywny</span>';
+  else if (r.status === 'rejected') statusTag = '<span class="tag" style="background:var(--danger-bg);color:var(--danger)">Odrzucony</span>';
+  else if (r.status === 'archived') statusTag = '<span class="tag" style="background:#eef1ec;color:var(--ink-soft)">Zarchiwizowany</span>';
+  else statusTag = '<span class="tag" style="background:var(--amber-bg);color:var(--amber)">Oczekujący</span>';
+
+  // Rejon
+  const rejonOptions = ['Rejon 1', 'Rejon 2', 'Rejon 3'];
+  const currentRejon = r.rejon || '';
+
+  // Pobierz historię zmian
+  let historyHtml = '<div style="color:var(--ink-faint);font-size:13px;">Brak historii zmian.</div>';
+  try {
+    const histQ = query(collection(db, 'residentChanges'), where('residentId', '==', residentId));
+    const histSnap = await getDocs(histQ);
+    if (!histSnap.empty) {
+      const sorted = histSnap.docs
+        .map(d => d.data())
+        .sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''))
+        .slice(0, 10);
+      historyHtml = sorted.map(h => {
+        const dt = h.timestamp ? new Date(h.timestamp).toLocaleString('pl-PL') : '—';
+        const adminName = h.adminName || h.adminUid || '—';
+        return `<div style="border-left:3px solid var(--line);padding:8px 12px;margin-bottom:8px;font-size:13px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+            <span style="color:var(--ink-faint);font-size:11px;">${dt}</span>
+            <span style="font-size:11px;color:var(--ink-soft);font-weight:500;">${adminName}</span>
+          </div>
+          <div><strong>${h.field || '—'}</strong>: <span style="color:var(--danger);text-decoration:line-through;">${h.oldValue || '—'}</span> → <span style="color:var(--green);">${h.newValue || '—'}</span></div>
+        </div>`;
+      }).join('');
+    }
+  } catch(e) {
+    console.error('Błąd pobierania historii zmian:', e);
+  }
+
+  // Przyciski akcji zależne od statusu
+  let actionButtons = `<button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="window.showEditMode()"><i class="ti ti-pencil"></i> Edytuj dane</button>`;
+  if (r.status === 'archived') {
+    actionButtons += `<button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;border-color:var(--green);color:var(--green);" onclick="window.restoreResident('${residentId}')"><i class="ti ti-refresh"></i> Przywróć mieszkańca</button>`;
+  } else {
+    actionButtons += `<button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;border-color:var(--amber);color:var(--amber);" onclick="window.archiveResident('${residentId}')"><i class="ti ti-archive"></i> Archiwizuj mieszkańca</button>`;
+  }
+
+  document.getElementById('resident-modal-body').innerHTML = `
+    <div id="resident-view-mode">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Imię</div><div style="font-weight:500;">${r.firstName || '—'}</div></div>
+        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Nazwisko</div><div style="font-weight:500;">${r.lastName || '—'}</div></div>
+        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Email</div><div>${r.email || '—'}</div></div>
+        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Telefon</div><div>${r.phone || '—'}</div></div>
+        <div style="grid-column:1/-1;"><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Adres</div><div>${address}</div></div>
+        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rejon</div><div>${r.rejon || '—'}</div></div>
+        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Status</div><div>${statusTag}</div></div>
+        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Data rejestracji</div><div>${r.submissionDate ? new Date(r.submissionDate).toLocaleDateString('pl-PL') : '—'}</div></div>
+        ${r.status === 'rejected' ? `<div style="grid-column:1/-1;"><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Powód odrzucenia</div><div style="color:var(--danger);">${r.rejectionReason || '—'}</div></div>` : ''}
+        ${r.status === 'archived' ? `<div style="grid-column:1/-1;"><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Zarchiwizowano</div><div>${r.archivedAt ? new Date(r.archivedAt).toLocaleString('pl-PL') : '—'}</div></div>` : ''}
+      </div>
+
+      <div style="border-top:1px solid var(--line);padding-top:14px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--ink-faint);margin-bottom:10px;">Więcej informacji</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="${mapsUrl}" target="_blank" class="btn btn-ghost" style="font-size:12px;padding:7px 14px;text-decoration:none;"><i class="ti ti-map-pin"></i> Pokaż na mapie</a>
+          <a href="mailto:${r.email || ''}" class="btn btn-ghost" style="font-size:12px;padding:7px 14px;text-decoration:none;"><i class="ti ti-mail"></i> Wyślij email</a>
+          <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="navigator.clipboard.writeText('${address.replace(/'/g, "\\'")}').then(()=>toast('Adres skopiowany'))"><i class="ti ti-clipboard"></i> Kopiuj adres</button>
+          <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="navigator.clipboard.writeText('${(r.phone || '').replace(/'/g, "\\'")}').then(()=>toast('Telefon skopiowany'))"><i class="ti ti-phone"></i> Kopiuj telefon</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        ${actionButtons}
+      </div>
+
+      <div style="border-top:1px solid var(--line);padding-top:14px;">
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--ink-faint);margin-bottom:10px;">Historia zmian</div>
+        ${historyHtml}
+      </div>
+    </div>
+
+    <div id="resident-edit-mode" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div>
+          <label style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Imię *</label>
+          <input id="edit-firstName" value="${r.firstName || ''}" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:14px;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Nazwisko *</label>
+          <input id="edit-lastName" value="${r.lastName || ''}" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:14px;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Email *</label>
+          <input id="edit-email" value="${r.email || ''}" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:14px;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Telefon *</label>
+          <input id="edit-phone" value="${r.phone || ''}" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:14px;outline:none;">
+        </div>
+        <div style="grid-column:1/-1;">
+          <label style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Adres *</label>
+          <input id="edit-address" value="${address !== '—' ? address : ''}" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:14px;outline:none;">
+        </div>
+        <div style="grid-column:1/-1;">
+          <label style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Rejon</label>
+          <select id="edit-rejon" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff;">
+            <option value="">— Nie przypisano —</option>
+            ${rejonOptions.map(rj => `<option value="${rj}" ${currentRejon === rj ? 'selected' : ''}>${rj}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div id="edit-error" style="display:none;color:var(--danger);font-size:13px;margin-bottom:12px;padding:10px;background:var(--danger-bg);border-radius:8px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="window.hideEditMode()">Anuluj</button>
+        <button class="btn btn-green" onclick="window.saveResidentEdit('${residentId}')"><i class="ti ti-device-floppy"></i> Zapisz zmiany</button>
+      </div>
+    </div>
+  `;
+}
+
+window.showEditMode = function() {
+  document.getElementById('resident-view-mode').style.display = 'none';
+  document.getElementById('resident-edit-mode').style.display = 'block';
+};
+window.hideEditMode = function() {
+  document.getElementById('resident-edit-mode').style.display = 'none';
+  document.getElementById('resident-view-mode').style.display = 'block';
+};
+
+window.saveResidentEdit = async function(residentId) {
+  const firstName = document.getElementById('edit-firstName').value.trim();
+  const lastName  = document.getElementById('edit-lastName').value.trim();
+  const email     = document.getElementById('edit-email').value.trim();
+  const phone     = document.getElementById('edit-phone').value.trim();
+  const address   = document.getElementById('edit-address').value.trim();
+  const errEl     = document.getElementById('edit-error');
+
+  // Walidacja
+  if (!firstName || !lastName || !email || !phone || !address) {
+    errEl.textContent = 'Wszystkie pola są wymagane.'; errEl.style.display = 'block'; return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    errEl.textContent = 'Podaj prawidłowy adres email.'; errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+
+  try {
+    const residentRef = doc(db, 'residents', residentId);
+    const residentDoc = await getDoc(residentRef);
+    if (!residentDoc.exists()) { toast('Nie znaleziono danych.'); return; }
+    const old = residentDoc.data();
+
+    // Wykryj zmiany i zapisz historię
+    const fields = { firstName, lastName, email, phone, address };
+    const oldValues = { firstName: old.firstName, lastName: old.lastName, email: old.email, phone: old.phone, address: [old.street, old.houseNumber, old.apartmentNumber ? '/' + old.apartmentNumber : '', old.settlement].filter(Boolean).join(' ') || old.address || '' };
+    const fieldLabels = { firstName: 'Imię', lastName: 'Nazwisko', email: 'Email', phone: 'Telefon', address: 'Adres' };
+
+    const adminName = auth.currentUser.displayName || auth.currentUser.email || auth.currentUser.uid;
+    for (const [key, newVal] of Object.entries(fields)) {
+      const oldVal = oldValues[key] || '';
+      if (newVal !== oldVal) {
+        await addDoc(collection(db, 'residentChanges'), {
+          residentId, field: fieldLabels[key],
+          oldValue: oldVal, newValue: newVal,
+          adminId: auth.currentUser.uid,
+          adminName: adminName,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    // Zaktualizuj dokument residents
+    await updateDoc(residentRef, { firstName, lastName, email, phone, address, updatedAt: new Date().toISOString(), updatedBy: auth.currentUser.uid });
+
+    // Log w adminActions
+    await addDoc(collection(db, 'adminActions'), {
+      action: 'edit', residentId, residentEmail: email,
+      adminId: auth.currentUser.uid, timestamp: new Date().toISOString()
+    });
+
+    toast(`Zapisano zmiany: ${firstName} ${lastName}`);
+
+    // Odśwież modal i tabelę
+    const updatedDoc = await getDoc(residentRef);
+    await _renderResidentModal(residentId, updatedDoc.data());
+    if (_currentResidentStatus) window.loadResidentsTab(_currentResidentStatus);
+
+  } catch (err) {
+    console.error(err);
+    errEl.textContent = 'Błąd zapisu: ' + err.message; errEl.style.display = 'block';
+  }
+};
+
+// Usuwanie mieszkańca
+window.confirmDeleteResident = function(residentId) {
+  if (!confirm('Czy na pewno chcesz usunąć tego mieszkańca?\n\nTa operacja jest nieodwracalna.')) return;
+  window._deleteResident(residentId);
+};
+
+window._deleteResident = async function(residentId) {
+  try {
+    const residentRef = doc(db, 'residents', residentId);
+    const residentDoc = await getDoc(residentRef);
+    if (!residentDoc.exists()) { toast('Nie znaleziono danych.'); return; }
+    const data = residentDoc.data();
+
+    // Usuń dokument residents
+    await deleteDoc(residentRef);
+
+    // Usuń powiązany dokument users
+    if (data.userId) {
+      await deleteDoc(doc(db, 'users', data.userId));
+    }
+
+    // Log w adminActions
+    await addDoc(collection(db, 'adminActions'), {
+      action: 'delete', residentId, residentEmail: data.email,
+      adminId: auth.currentUser.uid, timestamp: new Date().toISOString(),
+      residentName: `${data.firstName} ${data.lastName}`
+    });
+
+    window.closeResidentModal();
+    toast(`Usunięto mieszkańca: ${data.firstName} ${data.lastName}`);
+    if (_currentResidentStatus) window.loadResidentsTab(_currentResidentStatus);
+
+  } catch (err) {
+    console.error(err);
+    toast('Błąd usuwania: ' + err.message);
+  }
+};
+
+// Archiwizacja mieszkańca (zamiast usuwania)
+window.archiveResident = async function(residentId) {
+  if (!confirm('Czy na pewno chcesz zarchiwizować tego mieszkańca?\n\nMożna go później przywrócić.')) return;
+  try {
+    const residentRef = doc(db, 'residents', residentId);
+    const residentDoc = await getDoc(residentRef);
+    if (!residentDoc.exists()) { toast('Nie znaleziono danych.'); return; }
+    const data = residentDoc.data();
+
+    await updateDoc(residentRef, {
+      status: 'archived',
+      archivedAt: new Date().toISOString(),
+      archivedBy: auth.currentUser.uid
+    });
+    if (data.userId) {
+      await updateDoc(doc(db, 'users', data.userId), { status: 'archived' });
+    }
+    await addDoc(collection(db, 'adminActions'), {
+      action: 'archive', residentId, residentEmail: data.email,
+      adminId: auth.currentUser.uid, timestamp: new Date().toISOString(),
+      previousStatus: data.status, newStatus: 'archived'
+    });
+
+    window.closeResidentModal();
+    toast(`Zarchiwizowano: ${data.firstName} ${data.lastName}`);
+    if (_currentResidentStatus) window.loadResidentsTab(_currentResidentStatus);
+  } catch (err) {
+    console.error(err);
+    toast('Błąd archiwizacji: ' + err.message);
+  }
+};
+
+// Przywrócenie mieszkańca z archiwum
+window.restoreResident = async function(residentId) {
+  if (!confirm('Czy na pewno chcesz przywrócić tego mieszkańca?\n\nStatus zostanie zmieniony na Aktywny.')) return;
+  try {
+    const residentRef = doc(db, 'residents', residentId);
+    const residentDoc = await getDoc(residentRef);
+    if (!residentDoc.exists()) { toast('Nie znaleziono danych.'); return; }
+    const data = residentDoc.data();
+
+    await updateDoc(residentRef, {
+      status: 'approved',
+      restoredAt: new Date().toISOString(),
+      restoredBy: auth.currentUser.uid,
+      archivedAt: null,
+      archivedBy: null
+    });
+    if (data.userId) {
+      await updateDoc(doc(db, 'users', data.userId), { status: 'approved' });
+    }
+    await addDoc(collection(db, 'adminActions'), {
+      action: 'restore', residentId, residentEmail: data.email,
+      adminId: auth.currentUser.uid, timestamp: new Date().toISOString(),
+      previousStatus: 'archived', newStatus: 'approved'
+    });
+
+    window.closeResidentModal();
+    toast(`Przywrócono: ${data.firstName} ${data.lastName}`);
+    window.loadResidentsTab('archived');
+  } catch (err) {
+    console.error(err);
+    toast('Błąd przywracania: ' + err.message);
+  }
+};
+
+window.closeResidentModal = function() {
+  document.getElementById('resident-modal').style.display = 'none';
+  _currentResidentId = null;
+};
+
+// Załaduj zakładkę gdy wchodzimy do sekcji Mieszkańcy
+const origGo = window.go;
+window.go = function(id, el) {
+  origGo(id, el);
+  if (id === 'residents') {
+    window.loadResidentsTab('pending');
+  }
+};
+
 animate();
 </script>
 </body>

@@ -72,7 +72,9 @@ document.getElementById('register-form').addEventListener('submit', async (event
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    const settlement = document.getElementById('settlement').value.trim();
+    const settlementSelect = document.getElementById('settlement');
+    const settlement = settlementSelect.value.trim();
+    const rejon = settlementSelect.options[settlementSelect.selectedIndex].getAttribute('data-rejon') || '';
     const street = document.getElementById('street').value.trim();
     const houseNumber = document.getElementById('houseNumber').value.trim();
     const apartmentNumber = document.getElementById('apartmentNumber').value.trim();
@@ -118,6 +120,7 @@ document.getElementById('register-form').addEventListener('submit', async (event
         phone,
         email,
         settlement,
+        rejon,
         street,
         houseNumber,
         apartmentNumber,
