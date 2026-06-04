@@ -1,15 +1,22 @@
 import { collection, getDocs, doc, updateDoc, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { auth, db } from "../../firebase/firebase-config.js";
 
+console.log("pending-residents.js loaded");
+
 let residents = [];
 let pendingResidents = [];
 let currentRejectResidentId = null;
 
 // Pobierz zgłoszenia mieszkańców
 async function fetchResidents() {
+    console.log("fetchResidents called");
+    
     try {
         const residentsRef = collection(db, 'residents');
+        console.log("Fetching residents from Firestore...");
+        
         const residentsSnapshot = await getDocs(residentsRef);
+        console.log("Got", residentsSnapshot.size, "residents from Firestore");
         
         residents = [];
         pendingResidents = [];
@@ -30,6 +37,8 @@ async function fetchResidents() {
                 });
             }
         });
+        
+        console.log("Total residents:", residents.length, "Pending residents:", pendingResidents.length);
         
         updateStatistics();
         renderTable();
@@ -53,6 +62,8 @@ function updateStatistics() {
 
 // Renderuj tabelę
 function renderTable() {
+    console.log("renderTable called, pendingResidents:", pendingResidents.length);
+    
     const loading = document.getElementById('loading');
     const emptyState = document.getElementById('empty-state');
     const table = document.getElementById('residents-table');
@@ -71,7 +82,9 @@ function renderTable() {
     
     tableBody.innerHTML = '';
     
-    pendingResidents.forEach((resident) => {
+    pendingResidents.forEach((resident, index) => {
+        console.log(`Creating row for resident ${index}: ${resident.firstName} ${resident.lastName}`);
+        
         const row = document.createElement('tr');
         
         // Adres
@@ -89,12 +102,10 @@ function renderTable() {
         const approveBtn = document.createElement('button');
         approveBtn.className = 'btn btn-approve';
         approveBtn.innerHTML = '<i class="ti ti-check"></i> Zatwierdź';
-        approveBtn.onclick = () => approveResident(resident.id);
         
         const rejectBtn = document.createElement('button');
         rejectBtn.className = 'btn btn-reject';
         rejectBtn.innerHTML = '<i class="ti ti-x"></i> Odrzuć';
-        rejectBtn.onclick = () => openRejectModal(resident.id);
         
         actionsDiv.appendChild(approveBtn);
         actionsDiv.appendChild(rejectBtn);
@@ -109,15 +120,35 @@ function renderTable() {
             <td>${address}</td>
             <td>${resident.submissionDate}</td>
             <td>${statusBadge.outerHTML}</td>
-            <td>${actionsDiv.outerHTML}</td>
+            <td></td>
         `;
+        
+        // Wstaw actionsDiv do ostatniej komórki
+        const lastCell = row.cells[8];
+        lastCell.appendChild(actionsDiv);
+        
+        // Dodaj event listeners PO wstawieniu do DOM
+        approveBtn.addEventListener('click', () => {
+            console.log("APPROVE CLICK", resident.id);
+            console.log("approveResident START", resident.id);
+            approveResident(resident.id);
+        });
+        
+        rejectBtn.addEventListener('click', () => {
+            console.log("REJECT CLICK", resident.id);
+            openRejectModal(resident.id);
+        });
         
         tableBody.appendChild(row);
     });
+    
+    console.log("Table rendered with", pendingResidents.length, "rows");
 }
 
 // Zatwierdź mieszkańca
 async function approveResident(residentId) {
+    console.log("approveResident START", residentId);
+    
     try {
         const residentRef = doc(db, 'residents', residentId);
         const residentDoc = await getDoc(residentRef);
@@ -129,6 +160,8 @@ async function approveResident(residentId) {
         
         const residentData = residentDoc.data();
         const userId = residentData.userId;
+        
+        console.log("Updating Firestore...");
         
         // 1. Zaktualizuj dokument residents
         await updateDoc(residentRef, {
@@ -159,12 +192,14 @@ async function approveResident(residentId) {
             newStatus: 'approved'
         });
         
-        // 4. Odśwież tabelę
-        fetchResidents();
+        // 4. Odśwież tabelę i statystyki (najpierw)
+        await fetchResidents();
         
-        showSuccess(`Zgłoszenie mieszkańca ${residentData.firstName} ${residentData.lastName} zostało zatwierdzone.`);
+        // 5. Pokaz modal sukcesu (potem)
+        showSuccessModal(`Zgłoszenie mieszkańca ${residentData.firstName} ${residentData.lastName} zostało zatwierdzone.`);
         
     } catch (error) {
+        console.error('FULL ERROR:', error);
         console.error('Error zatwierdzania:', error);
         showError('Nie można zatwierdzić zgłoszenia. Spróbuj ponownie później.');
     }
@@ -199,6 +234,8 @@ async function rejectResident(reason) {
         const residentData = residentDoc.data();
         const userId = residentData.userId;
         
+        console.log("Updating Firestore...");
+        
         // 1. Zaktualizuj dokument residents
         await updateDoc(residentRef, {
             status: 'rejected',
@@ -226,29 +263,32 @@ async function rejectResident(reason) {
             newStatus: 'rejected'
         });
         
-        // 4. Odśwież tabelę
-        fetchResidents();
+        // 4. Odśwież tabelę i statystyki (najpierw)
+        await fetchResidents();
         
+        // 5. Zamknij modal odrzucenia
         closeRejectModal();
-        showSuccess(`Zgłoszenie mieszkańca ${residentData.firstName} ${residentData.lastName} zostało odrzucone.`);
+        
+        // 6. Pokaz modal sukcesu odrzucenia (potem)
+        showRejectSuccessModal();
         
     } catch (error) {
+        console.error('FULL ERROR:', error);
         console.error('Error odrzucania:', error);
         showError('Nie można odrzucić zgłoszenia. Spróbuj ponownie później.');
     }
 }
 
-// Wyświetl komunikat sukcesu
+// Wyświetl komunikat sukcesu (używając modalów)
 function showSuccess(message) {
-    // Można użyć toast lub alert
     console.log('Success:', message);
-    // TODO: Implementacja toast message
-    alert(`✅ ${message}`);
+    showSuccessModal(message);
 }
 
-// Wyświetl komunikat błęd
+// Wyświetl komunikat błęd (używając modalów)
 function showError(message) {
     console.error('Error:', message);
+    // Używamy tymczasowo alert dla błędów, ale można dodać modal błędów
     alert(`❌ ${message}`);
 }
 
@@ -295,16 +335,15 @@ document.getElementById('table-search').addEventListener('input', function() {
         const approveBtn = document.createElement('button');
         approveBtn.className = 'btn btn-approve';
         approveBtn.innerHTML = '<i class="ti ti-check"></i> Zatwierdź';
-        approveBtn.onclick = () => approveResident(resident.id);
         
         const rejectBtn = document.createElement('button');
         rejectBtn.className = 'btn btn-reject';
         rejectBtn.innerHTML = '<i class="ti ti-x"></i> Odrzuć';
-        rejectBtn.onclick = () => openRejectModal(resident.id);
         
         actionsDiv.appendChild(approveBtn);
         actionsDiv.appendChild(rejectBtn);
         
+        // Kolumny
         row.innerHTML = `
             <td>${resident.firstName}</td>
             <td>${resident.lastName}</td>
@@ -314,8 +353,24 @@ document.getElementById('table-search').addEventListener('input', function() {
             <td>${address}</td>
             <td>${resident.submissionDate}</td>
             <td>${statusBadge.outerHTML}</td>
-            <td>${actionsDiv.outerHTML}</td>
+            <td></td>
         `;
+        
+        // Wstaw actionsDiv do ostatniej komórki
+        const lastCell = row.cells[8];
+        lastCell.appendChild(actionsDiv);
+        
+        // Dodaj event listeners PO wstawieniu do DOM
+        approveBtn.addEventListener('click', () => {
+            console.log("APPROVE CLICK", resident.id);
+            console.log("approveResident START", resident.id);
+            approveResident(resident.id);
+        });
+        
+        rejectBtn.addEventListener('click', () => {
+            console.log("REJECT CLICK", resident.id);
+            openRejectModal(resident.id);
+        });
         
         tableBody.appendChild(row);
     });
@@ -329,10 +384,53 @@ document.getElementById('search-input').addEventListener('input', function() {
 
 // Sprawdź czy admin jest zalogowany
 auth.onAuthStateChanged((user) => {
+    console.log("auth.onAuthStateChanged called, user:", user ? user.email : "no user");
+    
     if (!user) {
+        console.log("No user, redirecting to login.html");
         window.location.href = 'login.html';
     } else {
+        console.log("User logged in:", user.email, "UID:", user.uid);
         // Startujemy pobieranie danych
         fetchResidents();
     }
 });
+
+// Pokaz modal sukcesu zatwierdzenia
+function showSuccessModal(message) {
+    document.getElementById('success-message').textContent = message;
+    document.getElementById('success-modal').classList.add('show');
+    
+    // Automatyczne zamknięcie po 3 sekundach
+    setTimeout(() => {
+        closeSuccessModal();
+    }, 3000);
+}
+
+// Zamknij modal sukcesu zatwierdzenia
+function closeSuccessModal() {
+    document.getElementById('success-modal').classList.remove('show');
+}
+
+// Pokaz modal sukcesu odrzucenia
+function showRejectSuccessModal() {
+    document.getElementById('reject-success-modal').classList.add('show');
+    
+    // Automatyczne zamknięcie po 3 sekundach
+    setTimeout(() => {
+        closeRejectSuccessModal();
+    }, 3000);
+}
+
+// Zamknij modal sukcesu odrzucenia
+function closeRejectSuccessModal() {
+    document.getElementById('reject-success-modal').classList.remove('show');
+}
+
+// Event listeners dla przycisków zamknięcia modalów sukcesu
+document.getElementById('success-close').addEventListener('click', closeSuccessModal);
+document.getElementById('reject-success-close').addEventListener('click', closeRejectSuccessModal);
+
+// Eksport funkcji do globalnego zakresu window (dla onclick w HTML)
+window.approveResident = approveResident;
+window.openRejectModal = openRejectModal;
