@@ -289,6 +289,14 @@ tbody tr:hover{background:var(--mint-2);}
   .stats{grid-template-columns:1fr;}
   .qa-grid{grid-template-columns:1fr;}
   .menu-toggle{display:flex!important;}
+  /* Modal responsywność */
+  #resident-modal > div{max-width:100%!important;max-height:95vh!important;margin:10px;}
+  #resident-modal-header{padding:20px 18px!important;}
+  #resident-modal-header > div:first-child{flex-direction:column;align-items:flex-start!important;gap:12px!important;}
+  #resident-avatar{width:52px!important;height:52px!important;font-size:20px!important;}
+  #resident-name{font-size:18px!important;}
+  #resident-status-badge{align-self:flex-start;}
+  #resident-modal-body{padding:18px!important;}
 }
 .menu-toggle{display:none;}
 .tabs{display:flex;gap:4px;margin-top:10px;}
@@ -522,16 +530,67 @@ tbody tr:hover{background:var(--mint-2);}
 
     <!-- Modal detali mieszkańca -->
     <div id="resident-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:20px;">
-      <div style="background:#fff;border-radius:var(--radius);width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);">
-        <!-- Nagłówek — zawsze widoczny -->
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:24px 28px 16px;border-bottom:1px solid var(--line);flex-shrink:0;">
-          <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:600;">Dane mieszkańca</div>
-          <button onclick="window.closeResidentModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink-faint);padding:4px;line-height:1;"><i class="ti ti-x"></i></button>
+      <div style="background:#fff;border-radius:var(--radius);width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);">
+        <!-- Nagłówek z avatarem i statusem -->
+        <div id="resident-modal-header" style="background:linear-gradient(175deg, #1b3a2b 0%, #22422f 100%);padding:26px 28px 0;border-radius:var(--radius) var(--radius) 0 0;position:relative;overflow:hidden;flex-shrink:0;">
+
+          <!-- Subtelna panorama architektoniczna SVG -->
+          <svg style="position:absolute;right:0;bottom:18px;width:340px;height:90px;opacity:0.06;pointer-events:none;" viewBox="0 0 340 90" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMax meet">
+            <polyline fill="none" stroke="#fff" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"
+              points="
+                0,90
+                0,60 12,60 12,50 18,50 18,60 30,60
+                30,45 36,45 36,38 42,38 42,45 48,45
+                48,55 54,55 54,30 56,28 58,30 58,55 64,55
+                64,48 68,48 68,42 72,42 72,48 76,48
+                76,35 78,32 80,35 80,55 86,55
+                86,40 90,36 90,28 92,24 94,28 94,36 98,40 98,55 104,55
+                104,50 108,50 108,44 112,44 112,50 116,50
+                116,38 120,38 120,32 122,30 124,32 124,38 128,38
+                128,52 132,52 132,45 136,45 136,52 140,52
+                140,35 142,32 144,35 144,55 150,55
+                150,42 154,42 154,36 158,36 158,42 162,42
+                162,50 166,50 166,44 170,44 170,50 174,50
+                174,38 178,34 182,38 182,55 188,55
+                188,48 192,48 192,40 196,40 196,48 200,48
+                200,30 202,26 204,30 204,55 210,55
+                210,44 214,44 214,38 218,38 218,44 222,44
+                222,52 226,52 226,46 230,46 230,52 234,52
+                234,36 238,32 240,28 242,32 244,36 244,55 250,55
+                250,42 254,42 254,36 258,36 258,42 262,42
+                262,50 266,50 266,44 270,44 270,50 274,50
+                274,38 278,38 278,32 280,30 282,32 282,38 286,38
+                286,55 292,55 292,45 296,45 296,55 302,55
+                302,40 306,36 310,40 310,55 316,55
+                316,48 320,48 320,42 324,42 324,48 328,48
+                328,60 340,60 340,90
+              "
+            />
+          </svg>
+
+          <!-- Przycisk zamknięcia -->
+          <button onclick="window.closeResidentModal()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);cursor:pointer;font-size:17px;color:rgba(255,255,255,0.7);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:7px;transition:all 0.2s;z-index:3;" onmouseover="this.style.background='rgba(255,255,255,0.14)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.color='rgba(255,255,255,0.7)'"><i class="ti ti-x"></i></button>
+
+          <!-- Treść nagłówka -->
+          <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:2;padding-bottom:22px;">
+            <div id="resident-avatar" style="width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;flex-shrink:0;letter-spacing:1px;"></div>
+            <div style="flex:1;min-width:0;">
+              <div id="resident-name" style="font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:#fff;margin-bottom:4px;line-height:1.25;"></div>
+              <div id="resident-email" style="font-size:12px;color:rgba(255,255,255,0.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+            </div>
+            <div id="resident-status-badge" style="flex-shrink:0;"></div>
+          </div>
+
+          <!-- Fala SVG oddzielająca header od treści -->
+          <svg style="display:block;width:100%;height:22px;margin-bottom:-1px;" viewBox="0 0 680 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,0 C120,22 240,0 340,14 C440,28 560,4 680,0 L680,22 L0,22 Z" fill="#f6f8f5"/>
+          </svg>
         </div>
+
         <!-- Treść — przewijalna -->
-        <div id="resident-modal-body" style="overflow-y:auto;padding:20px 28px;flex:1;"></div>
+        <div id="resident-modal-body" style="overflow-y:auto;padding:22px 28px;flex:1;background:var(--paper);"></div>
         <!-- Stopka — zawsze widoczna -->
-        <div style="padding:16px 28px;border-top:1px solid var(--line);text-align:right;flex-shrink:0;">
+        <div style="padding:14px 28px;border-top:1px solid var(--line);text-align:right;flex-shrink:0;background:#fff;">
           <button class="btn btn-ghost" onclick="window.closeResidentModal()">Zamknij</button>
         </div>
       </div>
@@ -894,6 +953,22 @@ async function _renderResidentModal(residentId, r) {
   const address = r.address || addressFromFields || '—';
   const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address + ', Polska');
 
+  // Inicjały dla avatara
+  const initials = ((r.firstName || '').charAt(0) + (r.lastName || '').charAt(0)).toUpperCase() || '??';
+  
+  // Status badge
+  let statusBadge = '';
+  if (r.status === 'approved') statusBadge = '<span style="background:rgba(255,255,255,0.2);color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.3);">✓ Aktywny</span>';
+  else if (r.status === 'rejected') statusBadge = '<span style="background:rgba(192,73,47,0.2);color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.3);">✕ Odrzucony</span>';
+  else if (r.status === 'archived') statusBadge = '<span style="background:rgba(255,255,255,0.15);color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.3);">📦 Archiwum</span>';
+  else statusBadge = '<span style="background:rgba(217,138,43,0.2);color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.3);">⏳ Oczekujący</span>';
+
+  // Wypełnij nagłówek
+  document.getElementById('resident-avatar').textContent = initials;
+  document.getElementById('resident-name').textContent = `${r.firstName || '—'} ${r.lastName || '—'}`;
+  document.getElementById('resident-email').textContent = r.email || '—';
+  document.getElementById('resident-status-badge').innerHTML = statusBadge;
+
   let statusTag = '';
   if (r.status === 'approved') statusTag = '<span class="tag" style="background:var(--mint);color:var(--green)">Aktywny</span>';
   else if (r.status === 'rejected') statusTag = '<span class="tag" style="background:var(--danger-bg);color:var(--danger)">Odrzucony</span>';
@@ -922,16 +997,26 @@ async function _renderResidentModal(residentId, r) {
         .map(d => d.data())
         .sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''))
         .slice(0, 10);
-      historyHtml = sorted.map(h => {
-        const dt = h.timestamp ? new Date(h.timestamp).toLocaleString('pl-PL') : '—';
+      historyHtml = sorted.map((h, idx) => {
+        const dt = h.timestamp ? new Date(h.timestamp).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
         const adminName = h.adminName || h.adminUid || '—';
-        const adminEmail = h.adminEmail || '';
-        return `<div style="border-left:3px solid var(--line);padding:8px 12px;margin-bottom:8px;font-size:13px;">
-          <div style="margin-bottom:6px;">
-            <div style="color:var(--ink-faint);font-size:11px;margin-bottom:2px;">${dt}</div>
-            <div style="font-size:11px;color:var(--ink-soft);"><strong>Administrator:</strong> ${adminName}${adminEmail ? ` (${adminEmail})` : ''}</div>
+        const adminInitials = adminName.split(' ').map(n => n.charAt(0)).join('').toUpperCase().substring(0, 2) || 'AD';
+        const isLast = idx === sorted.length - 1;
+        return `<div style="display:flex;gap:14px;position:relative;padding-bottom:${isLast ? '0' : '16px'};">
+          ${!isLast ? '<div style="position:absolute;left:19px;top:40px;bottom:0;width:2px;background:var(--line);"></div>' : ''}
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--leaf),var(--green-bright));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(124,179,66,0.25);position:relative;z-index:1;">${adminInitials}</div>
+          <div style="flex:1;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+              <div style="font-weight:600;font-size:13px;color:var(--forest);">${adminName}</div>
+              <div style="font-size:11px;color:var(--ink-faint);">${dt}</div>
+            </div>
+            <div style="font-size:13px;color:var(--ink-soft);margin-bottom:6px;">Zmieniono: <strong style="color:var(--ink);">${h.field || '—'}</strong></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+              <span style="color:var(--danger);text-decoration:line-through;opacity:0.7;">${h.oldValue || '—'}</span>
+              <i class="ti ti-arrow-right" style="font-size:14px;color:var(--ink-faint);"></i>
+              <span style="color:var(--green);font-weight:500;">${h.newValue || '—'}</span>
+            </div>
           </div>
-          <div><strong>${h.field || '—'}</strong>: <span style="color:var(--danger);text-decoration:line-through;">${h.oldValue || '—'}</span> → <span style="color:var(--green);">${h.newValue || '—'}</span></div>
         </div>`;
       }).join('');
     }
@@ -949,35 +1034,53 @@ async function _renderResidentModal(residentId, r) {
 
   document.getElementById('resident-modal-body').innerHTML = `
     <div id="resident-view-mode">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
-        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Imię</div><div style="font-weight:500;">${r.firstName || '—'}</div></div>
-        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Nazwisko</div><div style="font-weight:500;">${r.lastName || '—'}</div></div>
-        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Email</div><div>${r.email || '—'}</div></div>
-        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Telefon</div><div>${r.phone || '—'}</div></div>
-        <div style="grid-column:1/-1;"><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Adres</div><div>${address}</div></div>
-        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rejon</div><div>${r.rejon || '—'}</div></div>
-        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Status</div><div>${statusTag}</div></div>
-        <div><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Data rejestracji</div><div>${r.submissionDate ? new Date(r.submissionDate).toLocaleDateString('pl-PL') : '—'}</div></div>
-        ${r.status === 'rejected' ? `<div style="grid-column:1/-1;"><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Powód odrzucenia</div><div style="color:var(--danger);">${r.rejectionReason || '—'}</div></div>` : ''}
-        ${r.status === 'archived' ? `<div style="grid-column:1/-1;"><div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Zarchiwizowano</div><div>${r.archivedAt ? new Date(r.archivedAt).toLocaleString('pl-PL') : '—'}</div></div>` : ''}
+      <!-- Karty informacyjne -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:18px;">
+        <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--mint);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-phone" style="font-size:20px;color:var(--green);"></i></div>
+          <div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--ink-faint);margin-bottom:3px;">Telefon</div><div style="font-weight:500;font-size:14px;">${r.phone || '—'}</div></div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-mail" style="font-size:20px;color:var(--blue);"></i></div>
+          <div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--ink-faint);margin-bottom:3px;">Email</div><div style="font-weight:500;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.email || '—'}</div></div>
+        </div>
       </div>
+      <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-map-pin" style="font-size:20px;color:var(--amber);"></i></div>
+        <div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--ink-faint);margin-bottom:3px;">Adres</div><div style="font-weight:500;font-size:14px;">${address}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px;">
+        <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;">
+          <div style="font-size:11px;color:var(--ink-faint);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><i class="ti ti-home" style="font-size:14px;"></i> Rejon</div>
+          <div style="font-weight:600;font-size:15px;color:var(--forest);">${r.rejon || '—'}</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;">
+          <div style="font-size:11px;color:var(--ink-faint);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><i class="ti ti-calendar" style="font-size:14px;"></i> Data rejestracji</div>
+          <div style="font-weight:600;font-size:15px;color:var(--forest);">${r.submissionDate ? new Date(r.submissionDate).toLocaleDateString('pl-PL') : '—'}</div>
+        </div>
+      </div>
+      ${r.status === 'rejected' ? `<div style="background:var(--danger-bg);border:1px solid rgba(192,73,47,0.2);border-radius:10px;padding:14px;margin-bottom:18px;"><div style="font-size:11px;color:var(--danger);margin-bottom:6px;font-weight:600;"><i class="ti ti-alert-circle"></i> Powód odrzucenia</div><div style="color:var(--danger);font-size:14px;">${r.rejectionReason || '—'}</div></div>` : ''}
+      ${r.status === 'archived' ? `<div style="background:#eef1ec;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:18px;"><div style="font-size:11px;color:var(--ink-soft);margin-bottom:6px;font-weight:600;"><i class="ti ti-archive"></i> Zarchiwizowano</div><div style="color:var(--ink);font-size:14px;">${r.archivedAt ? new Date(r.archivedAt).toLocaleString('pl-PL') : '—'}</div></div>` : ''}
 
-      <div style="border-top:1px solid var(--line);padding-top:14px;margin-bottom:14px;">
-        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--ink-faint);margin-bottom:10px;">Więcej informacji</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <a href="${mapsUrl}" target="_blank" class="btn btn-ghost" style="font-size:12px;padding:7px 14px;text-decoration:none;"><i class="ti ti-map-pin"></i> Pokaż na mapie</a>
-          <a href="mailto:${r.email || ''}" class="btn btn-ghost" style="font-size:12px;padding:7px 14px;text-decoration:none;"><i class="ti ti-mail"></i> Wyślij email</a>
-          <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="navigator.clipboard.writeText('${address.replace(/'/g, "\\'")}').then(()=>toast('Adres skopiowany'))"><i class="ti ti-clipboard"></i> Kopiuj adres</button>
-          <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="navigator.clipboard.writeText('${(r.phone || '').replace(/'/g, "\\'")}').then(()=>toast('Telefon skopiowany'))"><i class="ti ti-phone"></i> Kopiuj telefon</button>
+      <!-- Szybkie akcje -->
+      <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:18px;">
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px;display:flex;align-items:center;gap:6px;"><i class="ti ti-bolt"></i> Szybkie akcje</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
+          <a href="${mapsUrl}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--paper);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;font-weight:500;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--green)';this.style.background='#fff'" onmouseout="this.style.borderColor='var(--line)';this.style.background='var(--paper)'"><i class="ti ti-map-pin"></i> Mapa</a>
+          <a href="mailto:${r.email || ''}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--paper);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;font-weight:500;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--green)';this.style.background='#fff'" onmouseout="this.style.borderColor='var(--line)';this.style.background='var(--paper)'"><i class="ti ti-mail"></i> Email</a>
+          <button onclick="navigator.clipboard.writeText('${address.replace(/'/g, "\\'")}').then(()=>toast('Adres skopiowany'))" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--paper);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:inherit;" onmouseover="this.style.borderColor='var(--green)';this.style.background='#fff'" onmouseout="this.style.borderColor='var(--line)';this.style.background='var(--paper)'"><i class="ti ti-clipboard"></i> Adres</button>
+          <button onclick="navigator.clipboard.writeText('${(r.phone || '').replace(/'/g, "\\'")}').then(()=>toast('Telefon skopiowany'))" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--paper);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:inherit;" onmouseover="this.style.borderColor='var(--green)';this.style.background='#fff'" onmouseout="this.style.borderColor='var(--line)';this.style.background='var(--paper)'"><i class="ti ti-phone"></i> Telefon</button>
         </div>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <!-- Akcje administracyjne -->
+      <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
         ${actionButtons}
       </div>
 
-      <div style="border-top:1px solid var(--line);padding-top:14px;">
-        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--ink-faint);margin-bottom:10px;">Historia zmian</div>
+      <!-- Historia zmian jako oś czasu -->
+      <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:14px;display:flex;align-items:center;gap:6px;"><i class="ti ti-history"></i> Historia zmian</div>
         ${historyHtml}
       </div>
     </div>
