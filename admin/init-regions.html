@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicjalizacja Rejonów — Gmina Głowno</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f6f8f5;
+            padding: 40px 20px;
+            color: #1a241e;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(27,58,43,0.08);
+        }
+        h1 {
+            color: #1b3a2b;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        .subtitle {
+            color: #5a6b60;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        #status {
+            margin-bottom: 20px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover:not(:disabled) {
+            background: #244c39;
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .info {
+            background: #e8f3ec;
+            border: 1px solid #2e7d32;
+            color: #1b3a2b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .info strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Inicjalizacja Rejonów</h1>
+        <div class="subtitle">Utwórz dokument settings/regions w Firestore</div>
+        
+        <div id="status"></div>
+        
+        <button id="createBtn">Utwórz dokument w Firestore</button>
+        
+        <div class="info">
+            <strong>ℹ️ Informacja:</strong>
+            Ten skrypt tworzy dokument <code>settings/regions</code> zawierający 33 miejscowości przypisane do 3 rejonów.
+            Dokument jest wymagany do poprawnego działania formularza rejestracji i panelu zarządzania rejonami.
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBuuzbs5EV8FUWeP234d51sne5aXTvgtw0",
+            authDomain: "gmina-glowno.firebaseapp.com",
+            projectId: "gmina-glowno",
+            storageBucket: "gmina-glowno.firebasestorage.app",
+            messagingSenderId: "891642263058",
+            appId: "1:891642263058:web:5892b802e12fe91fedcacb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Sprawdź stan autoryzacji
+        onAuthStateChanged(auth, (user) => {
+            console.log('auth.currentUser:', user);
+            
+            if (!user) {
+                // Użytkownik nie jest zalogowany
+                document.getElementById('status').innerHTML = `
+                    <div style="background:#fbf0e2;border:1px solid #d98a2b;color:#d98a2b;padding:16px;border-radius:12px;margin-bottom:20px;">
+                        <strong>⚠️ Nie jesteś zalogowany</strong><br>
+                        <span style="font-size:14px;">Zaloguj się do panelu administratora, a następnie wróć tutaj.</span>
+                    </div>
+                    <a href="login.html" style="display:inline-block;padding:12px 24px;background:#2e7d32;color:white;text-decoration:none;border-radius:8px;font-weight:600;text-align:center;width:100%;">
+                        Przejdź do logowania
+                    </a>
+                `;
+                document.getElementById('createBtn').disabled = true;
+                document.getElementById('createBtn').style.display = 'none';
+            } else {
+                // Użytkownik jest zalogowany
+                document.getElementById('status').innerHTML = `
+                    <div style="background:#e8f3ec;border:1px solid #2e7d32;color:#2e7d32;padding:16px;border-radius:12px;margin-bottom:20px;">
+                        <strong>✅ Zalogowano jako:</strong> ${user.email}<br>
+                        <span style="font-size:13px;">Możesz teraz utworzyć dokument w Firestore.</span>
+                    </div>
+                `;
+                document.getElementById('createBtn').disabled = false;
+            }
+        });
+
+        // Obsługa przycisku tworzenia dokumentu
+        document.getElementById('createBtn').addEventListener('click', async () => {
+            const statusEl = document.getElementById('status');
+            const btn = document.getElementById('createBtn');
+            
+            // Sprawdź czy użytkownik jest zalogowany
+            if (!auth.currentUser) {
+                statusEl.innerHTML = `
+                    <div style="background:#f9e8e4;border:1px solid #c0492f;color:#c0492f;padding:16px;border-radius:12px;margin-bottom:20px;">
+                        <strong>❌ Błąd:</strong> Musisz być zalogowany aby utworzyć dokument.
+                    </div>
+                `;
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Tworzenie dokumentu...';
+            
+            statusEl.innerHTML = `
+                <div style="background:#e7f0f9;border:1px solid #2563a8;color:#2563a8;padding:16px;border-radius:12px;margin-bottom:20px;">
+                    <strong>⏳ Tworzenie dokumentu...</strong><br>
+                    <span style="font-size:13px;">Proszę czekać...</span>
+                </div>
+            `;
+
+            const regionsData = {
+                settlements: {
+                    // REJON 1
+                    "Antoniew": "Rejon 1",
+                    "Boczki Domaradzkie": "Rejon 1",
+                    "Boczki Zarzeczne": "Rejon 1",
+                    "Bronisławów": "Rejon 1",
+                    "Chlebowice": "Rejon 1",
+                    "Domaradzyn": "Rejon 1",
+                    "Gawronki": "Rejon 1",
+                    "Glinnik": "Rejon 1",
+                    "Helenów": "Rejon 1",
+                    "Karasica": "Rejon 1",
+                    "Karnków": "Rejon 1",
+                    "Konarzew": "Rejon 1",
+                    "Popówek Włościański": "Rejon 1",
+                    "Wola Zbrożkowa": "Rejon 1",
+                    "Władysławów Bielawski": "Rejon 1",
+                    "Ziewanice": "Rejon 1",
+                    // REJON 2
+                    "Dąbrowa": "Rejon 2",
+                    "Felików": "Rejon 2",
+                    "Jasionna": "Rejon 2",
+                    "Mąkolice": "Rejon 2",
+                    "Mięsośnia": "Rejon 2",
+                    "Popów Głowieński": "Rejon 2",
+                    "Władysławów Popowski": "Rejon 2",
+                    "Wola Mąkolska": "Rejon 2",
+                    // REJON 3
+                    "Albinów": "Rejon 3",
+                    "Kadzielin": "Rejon 3",
+                    "Kamień": "Rejon 3",
+                    "Lubianków": "Rejon 3",
+                    "Ostrołęka": "Rejon 3",
+                    "Piaski Rudnickie": "Rejon 3",
+                    "Rudniczek": "Rejon 3",
+                    "Różany": "Rejon 3",
+                    "Wola Lubianowska": "Rejon 3"
+                },
+                regionsList: ["Rejon 1", "Rejon 2", "Rejon 3"],
+                lastUpdated: new Date().toISOString(),
+                createdBy: auth.currentUser.uid
+            };
+
+            try {
+                await setDoc(doc(db, 'settings', 'regions'), regionsData);
+                
+                statusEl.innerHTML = `
+                    <div style="background:#e8f3ec;border:1px solid #2e7d32;color:#2e7d32;padding:16px;border-radius:12px;margin-bottom:20px;">
+                        <strong>✅ Sukces!</strong><br>
+                        <span style="font-size:13px;">Dokument <code>settings/regions</code> został utworzony pomyślnie.<br>
+                        Zawiera 33 miejscowości przypisane do 3 rejonów.</span>
+                    </div>
+                `;
+                
+                btn.textContent = '✅ Dokument utworzony';
+                btn.style.background = '#2e7d32';
+                
+                console.log('✅ Dokument utworzony pomyślnie:', regionsData);
+                
+            } catch (error) {
+                statusEl.innerHTML = `
+                    <div style="background:#f9e8e4;border:1px solid #c0492f;color:#c0492f;padding:16px;border-radius:12px;margin-bottom:20px;">
+                        <strong>❌ Błąd:</strong> ${error.message}<br>
+                        <span style="font-size:13px;">Sprawdź konsolę przeglądarki (F12) aby zobaczyć szczegóły.</span>
+                    </div>
+                `;
+                
+                btn.disabled = false;
+                btn.textContent = 'Spróbuj ponownie';
+                
+                console.error('❌ Błąd tworzenia dokumentu:', error);
+            }
+        });
+    </script>
+</body>
+</html>

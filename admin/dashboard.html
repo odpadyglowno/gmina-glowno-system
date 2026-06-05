@@ -549,7 +549,52 @@ tbody tr:hover{background:var(--mint-2);}
       <div class="placeholder"><i class="ti ti-chart-histogram"></i><h3>Raporty</h3><p>Statystyki skuteczności doręczeń, aktywności mieszkańców i eksport danych.</p></div>
     </section>
     <section class="page" id="page-settings">
-      <div class="placeholder"><i class="ti ti-settings"></i><h3>Ustawienia</h3><p>Konfiguracja systemu, kody dostępu dla urzędników i zarządzanie administratorami.</p></div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><i class="ti ti-settings"></i> Ustawienia systemu</div>
+        </div>
+        <div class="panel-body">
+          <!-- Rejony i miejscowości -->
+          <details class="settings-section" style="border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;margin-bottom:16px;">
+            <summary style="cursor:pointer;font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px;user-select:none;">
+              <i class="ti ti-map-pin" style="color:var(--green);font-size:20px;"></i>
+              <span>Rejony i miejscowości</span>
+            </summary>
+            <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <div style="font-size:13px;color:var(--ink-soft);">Zarządzaj przypisaniem miejscowości do rejonów</div>
+                <button class="btn btn-green" style="padding:8px 14px;font-size:13px;" onclick="window.saveRegionsSettings()">
+                  <i class="ti ti-device-floppy"></i> Zapisz zmiany
+                </button>
+              </div>
+              <div id="regions-loading" style="text-align:center;padding:30px;color:var(--ink-faint);">
+                <i class="ti ti-loader" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+                Ładowanie danych...
+              </div>
+              <div id="regions-content" style="display:none;">
+                <table style="width:100%;border-collapse:collapse;">
+                  <thead>
+                    <tr>
+                      <th style="text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;text-transform:uppercase;color:var(--ink-faint);">Miejscowość</th>
+                      <th style="text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;text-transform:uppercase;color:var(--ink-faint);">Rejon</th>
+                    </tr>
+                  </thead>
+                  <tbody id="regions-table-body">
+                    <!-- Dynamicznie wypełniane -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="regions-error" style="display:none;color:var(--danger);padding:14px;background:var(--danger-bg);border-radius:8px;margin-top:14px;font-size:13px;"></div>
+            </div>
+          </details>
+
+          <!-- Inne sekcje ustawień (placeholder) -->
+          <div style="border:1px dashed var(--line);border-radius:var(--radius-sm);padding:30px;text-align:center;color:var(--ink-faint);">
+            <i class="ti ti-dots" style="font-size:32px;display:block;margin-bottom:10px;"></i>
+            <div style="font-size:14px;">Więcej ustawień będzie dostępnych wkrótce</div>
+          </div>
+        </div>
+      </div>
     </section>
 
   </div>
@@ -855,8 +900,16 @@ async function _renderResidentModal(residentId, r) {
   else if (r.status === 'archived') statusTag = '<span class="tag" style="background:#eef1ec;color:var(--ink-soft)">Zarchiwizowany</span>';
   else statusTag = '<span class="tag" style="background:var(--amber-bg);color:var(--amber)">Oczekujący</span>';
 
-  // Rejon
-  const rejonOptions = ['Rejon 1', 'Rejon 2', 'Rejon 3'];
+  // Rejon - pobierz dynamicznie z Firestore
+  let rejonOptions = ['Rejon 1', 'Rejon 2', 'Rejon 3']; // fallback
+  try {
+    const regionsDoc = await getDoc(doc(db, 'settings', 'regions'));
+    if (regionsDoc.exists()) {
+      rejonOptions = regionsDoc.data().regionsList || rejonOptions;
+    }
+  } catch (e) {
+    console.error('Błąd pobierania listy rejonów:', e);
+  }
   const currentRejon = r.rejon || '';
 
   // Pobierz historię zmian
@@ -872,10 +925,11 @@ async function _renderResidentModal(residentId, r) {
       historyHtml = sorted.map(h => {
         const dt = h.timestamp ? new Date(h.timestamp).toLocaleString('pl-PL') : '—';
         const adminName = h.adminName || h.adminUid || '—';
+        const adminEmail = h.adminEmail || '';
         return `<div style="border-left:3px solid var(--line);padding:8px 12px;margin-bottom:8px;font-size:13px;">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-            <span style="color:var(--ink-faint);font-size:11px;">${dt}</span>
-            <span style="font-size:11px;color:var(--ink-soft);font-weight:500;">${adminName}</span>
+          <div style="margin-bottom:6px;">
+            <div style="color:var(--ink-faint);font-size:11px;margin-bottom:2px;">${dt}</div>
+            <div style="font-size:11px;color:var(--ink-soft);"><strong>Administrator:</strong> ${adminName}${adminEmail ? ` (${adminEmail})` : ''}</div>
           </div>
           <div><strong>${h.field || '—'}</strong>: <span style="color:var(--danger);text-decoration:line-through;">${h.oldValue || '—'}</span> → <span style="color:var(--green);">${h.newValue || '—'}</span></div>
         </div>`;
@@ -982,6 +1036,7 @@ window.saveResidentEdit = async function(residentId) {
   const email     = document.getElementById('edit-email').value.trim();
   const phone     = document.getElementById('edit-phone').value.trim();
   const address   = document.getElementById('edit-address').value.trim();
+  const rejon     = document.getElementById('edit-rejon').value.trim();
   const errEl     = document.getElementById('edit-error');
 
   // Walidacja
@@ -1000,11 +1055,19 @@ window.saveResidentEdit = async function(residentId) {
     const old = residentDoc.data();
 
     // Wykryj zmiany i zapisz historię
-    const fields = { firstName, lastName, email, phone, address };
-    const oldValues = { firstName: old.firstName, lastName: old.lastName, email: old.email, phone: old.phone, address: [old.street, old.houseNumber, old.apartmentNumber ? '/' + old.apartmentNumber : '', old.settlement].filter(Boolean).join(' ') || old.address || '' };
-    const fieldLabels = { firstName: 'Imię', lastName: 'Nazwisko', email: 'Email', phone: 'Telefon', address: 'Adres' };
+    const fields = { firstName, lastName, email, phone, address, rejon };
+    const oldValues = { 
+      firstName: old.firstName, 
+      lastName: old.lastName, 
+      email: old.email, 
+      phone: old.phone, 
+      address: [old.street, old.houseNumber, old.apartmentNumber ? '/' + old.apartmentNumber : '', old.settlement].filter(Boolean).join(' ') || old.address || '',
+      rejon: old.rejon || ''
+    };
+    const fieldLabels = { firstName: 'Imię', lastName: 'Nazwisko', email: 'Email', phone: 'Telefon', address: 'Adres', rejon: 'Rejon' };
 
     const adminName = auth.currentUser.displayName || auth.currentUser.email || auth.currentUser.uid;
+    const adminEmail = auth.currentUser.email || '';
     for (const [key, newVal] of Object.entries(fields)) {
       const oldVal = oldValues[key] || '';
       if (newVal !== oldVal) {
@@ -1013,13 +1076,14 @@ window.saveResidentEdit = async function(residentId) {
           oldValue: oldVal, newValue: newVal,
           adminId: auth.currentUser.uid,
           adminName: adminName,
+          adminEmail: adminEmail,
           timestamp: new Date().toISOString()
         });
       }
     }
 
     // Zaktualizuj dokument residents
-    await updateDoc(residentRef, { firstName, lastName, email, phone, address, updatedAt: new Date().toISOString(), updatedBy: auth.currentUser.uid });
+    await updateDoc(residentRef, { firstName, lastName, email, phone, address, rejon, updatedAt: new Date().toISOString(), updatedBy: auth.currentUser.uid });
 
     // Log w adminActions
     await addDoc(collection(db, 'adminActions'), {
@@ -1155,6 +1219,135 @@ window.go = function(id, el) {
   origGo(id, el);
   if (id === 'residents') {
     window.loadResidentsTab('pending');
+  }
+  // Załaduj rejony gdy wchodzimy do ustawień
+  if (id === 'settings') {
+    window.loadRegionsSettings();
+  }
+};
+
+// ===== MODUŁ ZARZĄDZANIA REJONAMI =====
+
+let _regionsData = null;
+
+window.loadRegionsSettings = async function() {
+  const loading = document.getElementById('regions-loading');
+  const content = document.getElementById('regions-content');
+  const errorDiv = document.getElementById('regions-error');
+  
+  loading.style.display = 'block';
+  content.style.display = 'none';
+  errorDiv.style.display = 'none';
+  
+  try {
+    const regionsDoc = await getDoc(doc(db, 'settings', 'regions'));
+    
+    if (!regionsDoc.exists()) {
+      errorDiv.textContent = 'Dokument settings/regions nie istnieje. Użyj skryptu init-regions.html aby go utworzyć.';
+      errorDiv.style.display = 'block';
+      loading.style.display = 'none';
+      return;
+    }
+    
+    _regionsData = regionsDoc.data();
+    const settlements = _regionsData.settlements || {};
+    const regionsList = _regionsData.regionsList || [];
+    
+    // Sortuj miejscowości alfabetycznie
+    const sortedSettlements = Object.entries(settlements).sort((a, b) => a[0].localeCompare(b[0], 'pl'));
+    
+    // Renderuj tabelę
+    const tbody = document.getElementById('regions-table-body');
+    tbody.innerHTML = '';
+    
+    sortedSettlements.forEach(([settlement, region]) => {
+      const row = document.createElement('tr');
+      row.style.borderBottom = '1px solid var(--line-soft)';
+      
+      const cellSettlement = document.createElement('td');
+      cellSettlement.style.padding = '12px 10px';
+      cellSettlement.style.fontWeight = '500';
+      cellSettlement.textContent = settlement;
+      
+      const cellRegion = document.createElement('td');
+      cellRegion.style.padding = '12px 10px';
+      
+      const select = document.createElement('select');
+      select.className = 'region-select';
+      select.dataset.settlement = settlement;
+      select.style.width = '100%';
+      select.style.border = '1px solid var(--line)';
+      select.style.borderRadius = '8px';
+      select.style.padding = '8px 12px';
+      select.style.fontFamily = 'inherit';
+      select.style.fontSize = '14px';
+      select.style.outline = 'none';
+      select.style.background = '#fff';
+      
+      regionsList.forEach(rejon => {
+        const option = document.createElement('option');
+        option.value = rejon;
+        option.textContent = rejon;
+        if (rejon === region) option.selected = true;
+        select.appendChild(option);
+      });
+      
+      cellRegion.appendChild(select);
+      row.appendChild(cellSettlement);
+      row.appendChild(cellRegion);
+      tbody.appendChild(row);
+    });
+    
+    loading.style.display = 'none';
+    content.style.display = 'block';
+    
+    console.log('Załadowano ustawienia rejonów:', sortedSettlements.length, 'miejscowości');
+    
+  } catch (error) {
+    console.error('Błąd ładowania ustawień rejonów:', error);
+    errorDiv.textContent = 'Błąd ładowania danych: ' + error.message;
+    errorDiv.style.display = 'block';
+    loading.style.display = 'none';
+  }
+};
+
+window.saveRegionsSettings = async function() {
+  const errorDiv = document.getElementById('regions-error');
+  errorDiv.style.display = 'none';
+  
+  try {
+    // Zbierz wszystkie zmiany z selectów
+    const selects = document.querySelectorAll('.region-select');
+    const updatedSettlements = {};
+    
+    selects.forEach(select => {
+      const settlement = select.dataset.settlement;
+      const region = select.value;
+      updatedSettlements[settlement] = region;
+    });
+    
+    // Zaktualizuj dokument w Firestore
+    await updateDoc(doc(db, 'settings', 'regions'), {
+      settlements: updatedSettlements,
+      lastUpdated: new Date().toISOString(),
+      updatedBy: auth.currentUser.uid
+    });
+    
+    // Log w adminActions
+    await addDoc(collection(db, 'adminActions'), {
+      action: 'update_regions',
+      adminId: auth.currentUser.uid,
+      timestamp: new Date().toISOString(),
+      settlementsCount: Object.keys(updatedSettlements).length
+    });
+    
+    toast('Zapisano ustawienia rejonów');
+    _regionsData.settlements = updatedSettlements;
+    
+  } catch (error) {
+    console.error('Błąd zapisu ustawień rejonów:', error);
+    errorDiv.textContent = 'Błąd zapisu: ' + error.message;
+    errorDiv.style.display = 'block';
   }
 };
 

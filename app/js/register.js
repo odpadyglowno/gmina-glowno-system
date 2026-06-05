@@ -1,6 +1,64 @@
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { auth, db } from "../../firebase/firebase-config.js";
+
+// Globalna mapa miejscowości -> rejon
+let settlementsMap = {};
+
+// Ładowanie miejscowości z Firestore
+async function loadSettlements() {
+    const settlementSelect = document.getElementById('settlement');
+    
+    try {
+        const regionsDoc = await getDoc(doc(db, 'settings', 'regions'));
+        
+        if (!regionsDoc.exists()) {
+            settlementSelect.innerHTML = '<option value="">Błąd: Brak konfiguracji rejonów</option>';
+            console.error('Dokument settings/regions nie istnieje');
+            return;
+        }
+        
+        const data = regionsDoc.data();
+        settlementsMap = data.settlements || {};
+        const regionsList = data.regionsList || [];
+        
+        // Wyczyść select
+        settlementSelect.innerHTML = '<option value="">— Wybierz miejscowość —</option>';
+        
+        // Grupuj miejscowości według rejonów
+        regionsList.forEach(rejon => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = rejon.toUpperCase();
+            
+            // Znajdź wszystkie miejscowości dla tego rejonu
+            const settlementsInRegion = Object.entries(settlementsMap)
+                .filter(([settlement, regionName]) => regionName === rejon)
+                .map(([settlement]) => settlement)
+                .sort();
+            
+            settlementsInRegion.forEach(settlement => {
+                const option = document.createElement('option');
+                option.value = settlement;
+                option.textContent = settlement;
+                optgroup.appendChild(option);
+            });
+            
+            if (settlementsInRegion.length > 0) {
+                settlementSelect.appendChild(optgroup);
+            }
+        });
+        
+        console.log('Załadowano miejscowości:', Object.keys(settlementsMap).length);
+        
+    } catch (error) {
+        console.error('Błąd ładowania miejscowości:', error);
+        settlementSelect.innerHTML = '<option value="">Błąd ładowania miejscowości</option>';
+        showError('Nie można załadować listy miejscowości. Odśwież stronę.');
+    }
+}
+
+// Inicjalizacja - załaduj miejscowości przy starcie
+loadSettlements();
 
 // Walidacja telefonu
 function validatePhone(phone) {
@@ -74,7 +132,7 @@ document.getElementById('register-form').addEventListener('submit', async (event
     const confirmPassword = document.getElementById('confirmPassword').value;
     const settlementSelect = document.getElementById('settlement');
     const settlement = settlementSelect.value.trim();
-    const rejon = settlementSelect.options[settlementSelect.selectedIndex].getAttribute('data-rejon') || '';
+    const rejon = settlementsMap[settlement] || '';
     const street = document.getElementById('street').value.trim();
     const houseNumber = document.getElementById('houseNumber').value.trim();
     const apartmentNumber = document.getElementById('apartmentNumber').value.trim();
