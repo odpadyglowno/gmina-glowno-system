@@ -511,108 +511,143 @@ textarea.nf-input{min-height:90px;}
 
     <!-- ===== DASHBOARD ===== -->
     <section class="page active" id="page-dashboard">
+
+      <!-- HERO -->
       <div class="hero">
         <svg class="hero-herb" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
           <path d="M10,10 H190 V150 C190,205 100,218 100,218 C100,218 10,205 10,150 Z" fill="#fff"/>
           <g transform="translate(70,28)"><rect x="10" y="25" width="40" height="110" fill="#1b3a2b"/><path d="M5,25 V5 H15 V15 H25 V5 H35 V15 H45 V5 H55 V25 Z" fill="#1b3a2b"/></g>
         </svg>
         <div class="hero-eyebrow">Witaj ponownie</div>
-        <div class="hero-title">Dzień dobry, Przemysław</div>
-        <div class="hero-sub">System działa poprawnie. Dziś zaplanowano 7 odbiorów odpadów, a 18 powiadomień zostało wysłanych do mieszkańców.</div>
+        <div class="hero-title" id="dash-greeting">Dzień dobry</div>
+        <div class="hero-sub" id="dash-hero-sub">Ładowanie danych systemu...</div>
         <div class="hero-actions">
           <button class="btn btn-white" onclick="go('notify',document.querySelectorAll('.nav-item')[2])"><i class="ti ti-plus"></i> Nowe powiadomienie</button>
           <button class="btn btn-light" onclick="go('schedule',document.querySelectorAll('.nav-item')[3])"><i class="ti ti-calendar"></i> Harmonogram</button>
         </div>
       </div>
 
-      <div class="stats">
+      <!-- WIDGET: Dzisiaj w Gminie Głowno + kafelki -->
+      <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr;gap:18px;margin-bottom:26px;align-items:stretch;" id="dash-stats-row">
+
+        <!-- Widget: Dzisiaj -->
+        <div style="background:linear-gradient(135deg,var(--forest),var(--forest-2));border-radius:var(--radius);padding:22px 24px;color:#fff;min-width:200px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow);">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.55);margin-bottom:8px;">Dzisiaj w Gminie Głowno</div>
+          <div>
+            <div id="dash-clock" style="font-family:'Fraunces',serif;font-size:32px;font-weight:600;line-height:1;letter-spacing:-1px;"></div>
+            <div id="dash-date-full" style="font-size:14px;color:rgba(255,255,255,0.8);margin-top:6px;"></div>
+            <div id="dash-weekday" style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px;"></div>
+          </div>
+          <!-- Miejsce na widget pogody -->
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);font-size:11px;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:6px;">
+            <i class="ti ti-cloud" style="font-size:14px;"></i> Pogoda — wkrótce
+          </div>
+        </div>
+
+        <!-- Kafelek 1: Aktywni mieszkańcy -->
         <div class="stat">
           <div class="stat-top">
             <div class="stat-ico" style="background:var(--mint);color:var(--green);"><i class="ti ti-users"></i></div>
-            <span class="stat-trend trend-up"><i class="ti ti-trending-up" style="font-size:13px;"></i> +12</span>
+            <span class="stat-trend trend-up" id="dash-trend-approved">—</span>
           </div>
-          <div class="stat-value">1 247</div>
-          <div class="stat-label">Zarejestrowanych mieszkańców</div>
-          <div class="stat-spark" data-spark="6,9,7,11,10,13,12,15,14,17,16,19"></div>
+          <div class="stat-value" id="dash-approved">—</div>
+          <div class="stat-label">Aktywni mieszkańcy</div>
+          <div class="stat-spark" id="dash-spark-approved"></div>
         </div>
+
+        <!-- Kafelek 2: Oczekujące zgłoszenia -->
+        <div class="stat" style="cursor:pointer;" onclick="go('residents',document.querySelectorAll('.nav-item')[1])">
+          <div class="stat-top">
+            <div class="stat-ico" style="background:var(--amber-bg);color:var(--amber);"><i class="ti ti-user-question"></i></div>
+            <span class="stat-trend" id="dash-trend-pending" style="background:var(--amber-bg);color:var(--amber);">—</span>
+          </div>
+          <div class="stat-value" id="dash-pending">—</div>
+          <div class="stat-label">Oczekujące zgłoszenia</div>
+          <div class="stat-spark" id="dash-spark-pending"></div>
+        </div>
+
+        <!-- Kafelek 3: Powiadomienia wysłane -->
         <div class="stat">
           <div class="stat-top">
-            <div class="stat-ico" style="background:var(--blue-bg);color:var(--blue);"><i class="ti ti-user-check"></i></div>
-            <span class="stat-trend trend-up"><i class="ti ti-trending-up" style="font-size:13px;"></i> 83%</span>
+            <div class="stat-ico" style="background:var(--blue-bg);color:var(--blue);"><i class="ti ti-send"></i></div>
+            <span class="stat-trend trend-flat" id="dash-trend-notif">łącznie</span>
           </div>
-          <div class="stat-value">1 034</div>
-          <div class="stat-label">Aktywnych użytkowników</div>
-          <div class="stat-spark" data-spark="10,11,9,12,13,12,14,13,15,16,15,17"></div>
-        </div>
-        <div class="stat">
-          <div class="stat-top">
-            <div class="stat-ico" style="background:var(--amber-bg);color:var(--amber);"><i class="ti ti-send"></i></div>
-            <span class="stat-trend trend-flat">dziś</span>
-          </div>
-          <div class="stat-value">18</div>
+          <div class="stat-value" id="dash-notif-sent">—</div>
           <div class="stat-label">Powiadomień wysłanych</div>
-          <div class="stat-spark" data-spark="4,8,6,12,9,14,11,7,13,10,16,18"></div>
+          <div class="stat-spark" id="dash-spark-notif"></div>
         </div>
-        <div class="stat">
+
+        <!-- Kafelek 4: Zaplanowane powiadomienia -->
+        <div class="stat" style="cursor:pointer;" onclick="go('notify',document.querySelectorAll('.nav-item')[2])">
           <div class="stat-top">
-            <div class="stat-ico" style="background:var(--mint);color:var(--green);"><i class="ti ti-recycle"></i></div>
-            <span class="stat-trend trend-flat">jutro</span>
+            <div class="stat-ico" style="background:var(--mint);color:var(--green);"><i class="ti ti-calendar-event"></i></div>
+            <span class="stat-trend trend-flat" id="dash-trend-sched">zaplanowane</span>
           </div>
-          <div class="stat-value">7</div>
-          <div class="stat-label">Zaplanowanych odbiorów</div>
-          <div class="stat-spark" data-spark="3,5,4,6,5,7,6,8,5,7,6,7"></div>
+          <div class="stat-value" id="dash-notif-sched">—</div>
+          <div class="stat-label">Zaplanowane powiadomienia</div>
+          <div class="stat-spark" id="dash-spark-sched"></div>
         </div>
       </div>
 
+      <!-- GŁÓWNA SIATKA -->
       <div class="grid-2">
+
+        <!-- Ostatnie komunikaty — z Firestore -->
         <div class="panel">
           <div class="panel-head">
             <div class="panel-title"><i class="ti ti-mail"></i> Ostatnie komunikaty</div>
             <a class="panel-link" onclick="go('notify',document.querySelectorAll('.nav-item')[2])">Zobacz wszystkie <i class="ti ti-arrow-right"></i></a>
           </div>
-          <div class="panel-body">
+          <div class="panel-body" style="padding:0 0 4px;">
             <table>
-              <thead><tr><th style="width:120px;">Data</th><th>Tytuł</th><th style="width:140px;">Odbiorcy</th><th style="width:110px;">Status</th></tr></thead>
-              <tbody>
-                <tr><td class="cell-date">31.05.2026</td><td class="cell-title">Zmiana harmonogramu odbioru</td><td><span class="tag tag-r2"><span class="tag-dot"></span>Rejon 2</span></td><td><span class="tag tag-sent"><i class="ti ti-check" style="font-size:12px;"></i> Wysłano</span></td></tr>
-                <tr><td class="cell-date">30.05.2026</td><td class="cell-title">Przypomnienie o opłacie II kw.</td><td><span class="tag" style="background:#eef1ec;color:var(--ink-soft);"><span class="tag-dot"></span>Wszyscy</span></td><td><span class="tag tag-sent"><i class="ti ti-check" style="font-size:12px;"></i> Wysłano</span></td></tr>
-                <tr><td class="cell-date">28.05.2026</td><td class="cell-title">Jutro odbiór odpadów BIO</td><td><span class="tag tag-r1"><span class="tag-dot"></span>Rejon 1</span></td><td><span class="tag tag-sent"><i class="ti ti-check" style="font-size:12px;"></i> Wysłano</span></td></tr>
-                <tr><td class="cell-date">02.06.2026</td><td class="cell-title">Odbiór gabarytów — zapowiedź</td><td><span class="tag tag-r3"><span class="tag-dot"></span>Rejon 3</span></td><td><span class="tag tag-sched"><i class="ti ti-clock" style="font-size:12px;"></i> Zaplanowane</span></td></tr>
+              <thead><tr><th style="width:110px;">Data</th><th>Tytuł</th><th style="width:130px;">Odbiorcy</th><th style="width:100px;">Status</th></tr></thead>
+              <tbody id="dash-recent-notif">
+                <tr><td colspan="4" style="text-align:center;padding:30px;color:var(--ink-faint);"><i class="ti ti-loader" style="font-size:22px;display:block;margin-bottom:8px;"></i>Ładowanie...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
+        <!-- Mieszkańcy / rejon — z Firestore -->
         <div class="panel">
-          <div class="panel-head"><div class="panel-title"><i class="ti ti-map-pin"></i> Mieszkańcy / rejon</div></div>
+          <div class="panel-head">
+            <div class="panel-title"><i class="ti ti-map-pin"></i> Mieszkańcy / rejon</div>
+            <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;" onclick="window.loadDashboardRegions()"><i class="ti ti-refresh"></i></button>
+          </div>
+          <div class="panel-body" style="padding-top:18px;" id="dash-regions-body">
+            <div style="text-align:center;padding:20px;color:var(--ink-faint);"><i class="ti ti-loader" style="font-size:22px;"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOLNA SIATKA: Ostatnia aktywność + Szybkie akcje -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;">
+
+        <!-- Ostatnia aktywność -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title"><i class="ti ti-activity"></i> Ostatnia aktywność</div>
+            <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;" onclick="window.loadRecentActivity()"><i class="ti ti-refresh"></i></button>
+          </div>
+          <div class="panel-body" style="padding-top:12px;" id="dash-activity-body">
+            <div style="text-align:center;padding:20px;color:var(--ink-faint);"><i class="ti ti-loader" style="font-size:22px;"></i></div>
+          </div>
+        </div>
+
+        <!-- Szybkie akcje -->
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title"><i class="ti ti-bolt"></i> Szybkie akcje</div></div>
           <div class="panel-body" style="padding-top:18px;">
-            <div class="region">
-              <div class="region-head"><div class="region-name">Rejon 1 <small>16 miejscowości</small></div><div class="region-val" style="color:var(--green);">524</div></div>
-              <div class="region-track"><div class="region-fill" style="width:0" data-w="68%"></div></div>
-            </div>
-            <div class="region">
-              <div class="region-head"><div class="region-name">Rejon 2 <small>8 miejscowości</small></div><div class="region-val" style="color:var(--blue);">438</div></div>
-              <div class="region-track"><div class="region-fill" style="width:0;background:linear-gradient(90deg,#2563a8,#4d8fd6);" data-w="56%"></div></div>
-            </div>
-            <div class="region">
-              <div class="region-head"><div class="region-name">Rejon 3 <small>9 miejscowości</small></div><div class="region-val" style="color:var(--amber);">285</div></div>
-              <div class="region-track"><div class="region-fill" style="width:0;background:linear-gradient(90deg,#d98a2b,#e8b15f);" data-w="37%"></div></div>
+            <div class="qa-grid">
+              <a class="qa" onclick="go('notify',document.querySelectorAll('.nav-item')[2])"><div class="qa-ico"><i class="ti ti-message-plus"></i></div><div class="qa-title">Nowy komunikat</div><div class="qa-desc">Wyślij powiadomienie do mieszkańców</div></a>
+              <a class="qa" onclick="go('schedule',document.querySelectorAll('.nav-item')[3])"><div class="qa-ico"><i class="ti ti-calendar-plus"></i></div><div class="qa-title">Edytuj harmonogram</div><div class="qa-desc">Zaktualizuj terminy odbioru</div></a>
+              <a class="qa" onclick="go('residents',document.querySelectorAll('.nav-item')[1])"><div class="qa-ico"><i class="ti ti-user-plus"></i></div><div class="qa-title">Mieszkańcy</div><div class="qa-desc">Zarządzaj zgłoszeniami</div></a>
+              <a class="qa" onclick="go('reports',document.querySelectorAll('.nav-item')[5])"><div class="qa-ico"><i class="ti ti-file-download"></i></div><div class="qa-title">Eksport raportu</div><div class="qa-desc">Pobierz dane w formacie CSV</div></a>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="panel">
-        <div class="panel-head"><div class="panel-title"><i class="ti ti-bolt"></i> Szybkie akcje</div></div>
-        <div class="panel-body" style="padding-top:18px;">
-          <div class="qa-grid" style="grid-template-columns:repeat(4,1fr);">
-            <a class="qa" onclick="go('notify',document.querySelectorAll('.nav-item')[2])"><div class="qa-ico"><i class="ti ti-message-plus"></i></div><div class="qa-title">Nowy komunikat</div><div class="qa-desc">Wyślij powiadomienie do mieszkańców</div></a>
-            <a class="qa" onclick="go('schedule',document.querySelectorAll('.nav-item')[3])"><div class="qa-ico"><i class="ti ti-calendar-plus"></i></div><div class="qa-title">Edytuj harmonogram</div><div class="qa-desc">Zaktualizuj terminy odbioru</div></a>
-            <a class="qa" onclick="go('residents',document.querySelectorAll('.nav-item')[1])"><div class="qa-ico"><i class="ti ti-user-plus"></i></div><div class="qa-title">Dodaj mieszkańca</div><div class="qa-desc">Zarejestruj nowego użytkownika</div></a>
-            <a class="qa" onclick="go('reports',document.querySelectorAll('.nav-item')[5])"><div class="qa-ico"><i class="ti ti-file-download"></i></div><div class="qa-title">Eksport raportu</div><div class="qa-desc">Pobierz dane w formacie CSV</div></a>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- ===== OTHER PAGES (placeholders) ===== -->
@@ -1174,9 +1209,8 @@ window.sortResidentsTable = function(mode) {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initNotifications } from "./js/notifications.js";
-// Przekaż deleteDoc i updateDoc do modułu powiadomień
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuuzbs5EV8FUWeP234d51sne5aXTvgtw0",
@@ -1886,6 +1920,301 @@ window.saveRegionsSettings = async function() {
 // ===== INICJALIZACJA MODUŁU POWIADOMIEŃ =====
 initNotifications({ db, auth, addDoc, collection, getDocs, getDoc, doc, query, orderBy, limit, deleteDoc, updateDoc, toast });
 
+// =====================================================
+// DASHBOARD — DANE RZECZYWISTE Z FIRESTORE
+// =====================================================
+
+// Subskrypcje onSnapshot (do odsubskrybowania przy potrzebie)
+const _dashUnsubs = [];
+
+// ---- ZEGAR / WIDGET DZISIAJ ----
+function _startDashClock() {
+  const WEEKDAYS = ['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
+  const MONTHS   = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+
+  function _tick() {
+    const now = new Date();
+    const clockEl   = document.getElementById('dash-clock');
+    const dateEl    = document.getElementById('dash-date-full');
+    const weekdayEl = document.getElementById('dash-weekday');
+    const pmEl      = document.getElementById('pm');
+
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    if (clockEl) clockEl.textContent = `${hh}:${mm}`;
+    if (dateEl)  dateEl.textContent  = `${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+    if (weekdayEl) weekdayEl.textContent = WEEKDAYS[now.getDay()];
+    if (pmEl) pmEl.textContent = `${WEEKDAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  }
+  _tick();
+  setInterval(_tick, 1000);
+}
+
+// ---- POWITANIE W HERO ----
+function _updateGreeting(user) {
+  const greetEl = document.getElementById('dash-greeting');
+  if (!greetEl) return;
+  const h = new Date().getHours();
+  const greeting = h < 12 ? 'Dzień dobry' : h < 18 ? 'Dzień dobry' : 'Dobry wieczór';
+  const name = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || '';
+  greetEl.textContent = name ? `${greeting}, ${name}` : greeting;
+}
+
+// ---- KAFELKI: MIESZKAŃCY (onSnapshot) ----
+function _initResidentsCounters() {
+  // Aktywni mieszkańcy
+  const qApproved = query(collection(db, 'residents'), where('status', '==', 'approved'));
+  const unsubApproved = onSnapshot(qApproved, snap => {
+    const count = snap.size;
+    const el = document.getElementById('dash-approved');
+    const trend = document.getElementById('dash-trend-approved');
+    if (el) el.textContent = count.toLocaleString('pl-PL');
+    if (trend) { trend.textContent = `aktywni`; trend.className = 'stat-trend trend-up'; }
+    _renderSparkBars('dash-spark-approved', count);
+  }, err => console.error('onSnapshot approved:', err));
+  _dashUnsubs.push(unsubApproved);
+
+  // Oczekujące zgłoszenia
+  const qPending = query(collection(db, 'residents'), where('status', '==', 'pending'));
+  const unsubPending = onSnapshot(qPending, snap => {
+    const count = snap.size;
+    const el = document.getElementById('dash-pending');
+    const trend = document.getElementById('dash-trend-pending');
+    if (el) el.textContent = count.toLocaleString('pl-PL');
+    if (trend) {
+      trend.textContent = count > 0 ? `${count} nowych` : 'brak';
+      trend.style.background = count > 0 ? 'var(--amber-bg)' : '#eef1ec';
+      trend.style.color = count > 0 ? 'var(--amber)' : 'var(--ink-faint)';
+    }
+    _renderSparkBars('dash-spark-pending', count);
+    // Aktualizuj badge w nawigacji
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      if (item.textContent.includes('Mieszkańcy')) {
+        let badge = item.querySelector('.nav-badge');
+        if (!badge) { badge = document.createElement('span'); badge.className = 'nav-badge'; item.appendChild(badge); }
+        badge.textContent = count > 0 ? count : '';
+        badge.style.display = count > 0 ? '' : 'none';
+      }
+    });
+  }, err => console.error('onSnapshot pending:', err));
+  _dashUnsubs.push(unsubPending);
+}
+
+// ---- KAFELKI: POWIADOMIENIA (onSnapshot) ----
+function _initNotifCounters() {
+  // Wysłane powiadomienia — WSZYSTKIE dokumenty z kolekcji notifications
+  const qSent = collection(db, 'notifications');
+  const unsubSent = onSnapshot(qSent, snap => {
+    const count = snap.size;
+    const el = document.getElementById('dash-notif-sent');
+    if (el) el.textContent = count.toLocaleString('pl-PL');
+    _renderSparkBars('dash-spark-notif', count);
+    // Aktualizuj też statystyki w module powiadomień
+    const nstatEl = document.getElementById('nstat-sent');
+    if (nstatEl) nstatEl.textContent = count;
+  }, err => console.error('onSnapshot notifications:', err));
+  _dashUnsubs.push(unsubSent);
+
+  // Zaplanowane powiadomienia — status = scheduled
+  const qSched = query(collection(db, 'scheduledNotifications'), where('status', '==', 'scheduled'));
+  const unsubSched = onSnapshot(qSched, snap => {
+    const count = snap.size;
+    const el = document.getElementById('dash-notif-sched');
+    const trend = document.getElementById('dash-trend-sched');
+    if (el) el.textContent = count.toLocaleString('pl-PL');
+    if (trend) {
+      trend.textContent = count > 0 ? `${count} zapl.` : 'brak';
+      trend.className = count > 0 ? 'stat-trend trend-up' : 'stat-trend trend-flat';
+    }
+    _renderSparkBars('dash-spark-sched', count);
+    // Aktualizuj badge Powiadomienia
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      if (item.textContent.includes('Powiadomienia')) {
+        let badge = item.querySelector('.nav-badge');
+        if (!badge) { badge = document.createElement('span'); badge.className = 'nav-badge'; item.appendChild(badge); }
+        badge.textContent = count > 0 ? count : '';
+        badge.style.display = count > 0 ? '' : 'none';
+      }
+    });
+  }, err => console.error('onSnapshot scheduledNotifications:', err));
+  _dashUnsubs.push(unsubSched);
+}
+
+// ---- HERO SUB — aktualizacja po załadowaniu danych ----
+async function _updateHeroSub() {
+  try {
+    const [pendingSnap, schedSnap] = await Promise.all([
+      getDocs(query(collection(db, 'residents'), where('status', '==', 'pending'))),
+      getDocs(query(collection(db, 'scheduledNotifications'), where('status', '==', 'scheduled')))
+    ]);
+    const pending = pendingSnap.size;
+    const sched   = schedSnap.size;
+    const heroSub = document.getElementById('dash-hero-sub');
+    if (!heroSub) return;
+    const parts = [];
+    if (pending > 0) parts.push(`${pending} ${pending === 1 ? 'zgłoszenie oczekuje' : pending < 5 ? 'zgłoszenia oczekują' : 'zgłoszeń oczekuje'} na akceptację`);
+    if (sched > 0)   parts.push(`${sched} ${sched === 1 ? 'powiadomienie zaplanowane' : 'powiadomień zaplanowanych'}`);
+    heroSub.textContent = parts.length > 0
+      ? parts.join(' · ') + '.'
+      : 'System działa poprawnie. Brak oczekujących zgłoszeń.';
+  } catch (e) { console.error('_updateHeroSub:', e); }
+}
+
+// ---- SPARK BARS ----
+function _renderSparkBars(containerId, currentVal) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  // Generuj 12 słupków — ostatni = currentVal, reszta losowo proporcjonalna
+  const max = Math.max(currentVal, 1);
+  const vals = Array.from({length: 11}, (_, i) => Math.max(1, Math.round(max * (0.3 + Math.random() * 0.7))));
+  vals.push(currentVal);
+  const vmax = Math.max(...vals, 1);
+  el.innerHTML = vals.map(v => `<div class="spark-bar" style="height:${Math.round(v/vmax*100)}%"></div>`).join('');
+}
+
+// ---- OSTATNIE KOMUNIKATY (onSnapshot) ----
+function _initRecentNotif() {
+  const tbody = document.getElementById('dash-recent-notif');
+  if (!tbody) return;
+
+  const qNotif = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(5));
+  const unsubNotif = onSnapshot(qNotif, snap => {
+    if (snap.empty) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--ink-faint);">
+        <i class="ti ti-bell-off" style="font-size:22px;display:block;margin-bottom:8px;"></i>Brak wysłanych powiadomień
+      </td></tr>`;
+      return;
+    }
+    tbody.innerHTML = '';
+    snap.forEach(d => {
+      const n = d.data();
+      const dt = n.sentAt || n.createdAt || '';
+      const dtFmt = dt ? new Date(dt).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+      const statusTag = n.status === 'sent'
+        ? `<span class="tag tag-sent"><i class="ti ti-check" style="font-size:11px;"></i> Wysłano</span>`
+        : `<span class="tag tag-sched"><i class="ti ti-clock" style="font-size:11px;"></i> Zapl.</span>`;
+      const audLabel = n.audienceLabel || '—';
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="cell-date">${dtFmt}</td>
+        <td class="cell-title" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n.title || '—'}</td>
+        <td style="font-size:12px;color:var(--ink-soft);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${audLabel}</td>
+        <td>${statusTag}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }, err => {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Błąd: ${err.message}</td></tr>`;
+  });
+  _dashUnsubs.push(unsubNotif);
+}
+
+// ---- MIESZKAŃCY / REJON (jednorazowe pobieranie) ----
+window.loadDashboardRegions = async function() {
+  const body = document.getElementById('dash-regions-body');
+  if (!body) return;
+  body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-faint);"><i class="ti ti-loader" style="font-size:22px;"></i></div>`;
+  try {
+    const snap = await getDocs(query(collection(db, 'residents'), where('status', '==', 'approved')));
+    const counts = {};
+    snap.forEach(d => {
+      const rejon = d.data().rejon || 'Nieprzypisani';
+      counts[rejon] = (counts[rejon] || 0) + 1;
+    });
+    const total = snap.size || 1;
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const colors = [
+      'linear-gradient(90deg,var(--green),var(--leaf))',
+      'linear-gradient(90deg,#2563a8,#4d8fd6)',
+      'linear-gradient(90deg,#d98a2b,#e8b15f)',
+      'linear-gradient(90deg,#7b3fa0,#b07fd6)',
+      'linear-gradient(90deg,#c0492f,#e07060)'
+    ];
+    if (!sorted.length) {
+      body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-faint);font-size:13px;">Brak aktywnych mieszkańców.</div>`;
+      return;
+    }
+    body.innerHTML = sorted.map(([rejon, count], i) => {
+      const pct = Math.round(count / total * 100);
+      const color = colors[i % colors.length];
+      return `<div class="region">
+        <div class="region-head">
+          <div class="region-name">${rejon}</div>
+          <div class="region-val">${count}</div>
+        </div>
+        <div class="region-track">
+          <div class="region-fill" style="width:${pct}%;background:${color};"></div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    body.innerHTML = `<div style="color:var(--danger);padding:14px;font-size:13px;">Błąd: ${e.message}</div>`;
+  }
+};
+
+// ---- OSTATNIA AKTYWNOŚĆ z adminActions ----
+window.loadRecentActivity = async function() {
+  const body = document.getElementById('dash-activity-body');
+  if (!body) return;
+  body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-faint);"><i class="ti ti-loader" style="font-size:22px;"></i></div>`;
+  try {
+    const snap = await getDocs(query(collection(db, 'adminActions'), orderBy('timestamp', 'desc'), limit(10)));
+    if (snap.empty) {
+      body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-faint);font-size:13px;"><i class="ti ti-activity" style="font-size:22px;display:block;margin-bottom:8px;"></i>Brak zdarzeń w historii.</div>`;
+      return;
+    }
+    const ACTION_LABELS = {
+      approve:        { icon: 'ti-user-check',  color: 'var(--green)',  bg: 'var(--mint)',       label: 'Akceptacja mieszkańca' },
+      reject:         { icon: 'ti-user-x',      color: 'var(--danger)', bg: 'var(--danger-bg)',  label: 'Odrzucenie mieszkańca' },
+      edit:           { icon: 'ti-pencil',       color: 'var(--blue)',   bg: 'var(--blue-bg)',    label: 'Edycja danych' },
+      delete:         { icon: 'ti-trash',        color: 'var(--danger)', bg: 'var(--danger-bg)',  label: 'Usunięcie mieszkańca' },
+      archive:        { icon: 'ti-archive',      color: 'var(--amber)',  bg: 'var(--amber-bg)',   label: 'Archiwizacja mieszkańca' },
+      restore:        { icon: 'ti-refresh',      color: 'var(--green)',  bg: 'var(--mint)',       label: 'Przywrócenie mieszkańca' },
+      notification:   { icon: 'ti-send',         color: 'var(--blue)',   bg: 'var(--blue-bg)',    label: 'Wysłanie powiadomienia' },
+      update_regions: { icon: 'ti-map-pin',      color: 'var(--green)',  bg: 'var(--mint)',       label: 'Aktualizacja rejonów' }
+    };
+    body.innerHTML = snap.docs.map(d => {
+      const a = d.data();
+      const cfg = ACTION_LABELS[a.action] || { icon: 'ti-activity', color: 'var(--ink-soft)', bg: '#eef1ec', label: a.action || 'Zdarzenie' };
+      const dt = a.timestamp ? new Date(a.timestamp).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+      const who = a.residentEmail || a.residentName || '';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);">
+        <div style="width:36px;height:36px;border-radius:10px;background:${cfg.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ti ${cfg.icon}" style="font-size:18px;color:${cfg.color};"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:var(--ink);">${cfg.label}</div>
+          ${who ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${who}</div>` : ''}
+        </div>
+        <div style="font-size:11px;color:var(--ink-faint);flex-shrink:0;text-align:right;">${dt}</div>
+      </div>`;
+    }).join('');
+    // Usuń border-bottom z ostatniego
+    const items = body.querySelectorAll('div[style*="border-bottom"]');
+    if (items.length) items[items.length - 1].style.borderBottom = 'none';
+  } catch (e) {
+    body.innerHTML = `<div style="color:var(--danger);padding:14px;font-size:13px;">Błąd: ${e.message}</div>`;
+  }
+};
+
+// ---- INICJALIZACJA DASHBOARD ----
+function _initDashboard() {
+  onAuthStateChanged(auth, user => {
+    if (!user) return;
+    _updateGreeting(user);
+    _startDashClock();
+    _initResidentsCounters();
+    _initNotifCounters();
+    _initRecentNotif();
+    window.loadDashboardRegions();
+    window.loadRecentActivity();
+    _updateHeroSub();
+  });
+}
+
+_initDashboard();
 animate();
 </script>
 </body>
