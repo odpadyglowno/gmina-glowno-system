@@ -472,6 +472,7 @@ textarea.nf-input{min-height:90px;}
     <a class="nav-item active" onclick="go('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
     <a class="nav-item" onclick="go('residents',this)"><i class="ti ti-users"></i> Mieszkańcy</a>
     <a class="nav-item" onclick="go('notify',this)"><i class="ti ti-bell"></i> Powiadomienia <span class="nav-badge">3</span></a>
+    <a class="nav-item" onclick="go('reports-module',this)"><i class="ti ti-clipboard-list"></i> Zgłoszenia <span class="nav-badge" id="nav-badge-reports" style="display:none;"></span></a>
     <div class="nav-label">Zarządzanie</div>
     <a class="nav-item" onclick="go('schedule',this)"><i class="ti ti-recycle"></i> Harmonogram</a>
     <a class="nav-item" onclick="go('payments',this)"><i class="ti ti-coins"></i> Opłaty</a>
@@ -999,6 +1000,11 @@ textarea.nf-input{min-height:90px;}
         </div>
       </div>
     </div>
+    <!-- ===== MODUŁ ZGŁOSZEŃ MIESZKAŃCÓW ===== -->
+    <section class="page" id="page-reports-module">
+      <div class="placeholder"><i class="ti ti-loader"></i><h3>Ładowanie modułu zgłoszeń...</h3><p>Inicjalizacja...</p></div>
+    </section>
+
     <section class="page" id="page-schedule">
       <div class="placeholder"><i class="ti ti-recycle"></i><h3>Harmonogram</h3><p>Edytor harmonogramu wywozu odpadów dla wszystkich rejonów i miesięcy, synchronizowany z aplikacją mieszkańców.</p></div>
     </section>
@@ -1057,6 +1063,20 @@ textarea.nf-input{min-height:90px;}
             <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft);">
               <div id="tpl-settings-wrap">
                 <div style="text-align:center;padding:20px;color:var(--ink-faint);font-size:13px;">Otwórz sekcję aby załadować szablony.</div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Kategorie zgłoszeń -->
+          <details class="settings-section" id="report-categories-details" style="border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;margin-bottom:16px;" ontoggle="if(this.open && typeof window.loadReportCategoriesSettings==='function') window.loadReportCategoriesSettings()">
+            <summary style="cursor:pointer;font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px;user-select:none;">
+              <i class="ti ti-clipboard-list" style="color:var(--green);font-size:20px;"></i>
+              <span>Kategorie zgłoszeń mieszkańców</span>
+            </summary>
+            <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft);">
+              <div style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">Zarządzaj kategoriami zgłoszeń — dodawaj, edytuj, usuwaj i zmieniaj kolejność bez edycji kodu.</div>
+              <div id="report-categories-settings-wrap">
+                <div style="text-align:center;padding:20px;color:var(--ink-faint);font-size:13px;">Otwórz sekcję aby załadować kategorie.</div>
               </div>
             </div>
           </details>
@@ -1211,6 +1231,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initNotifications } from "./js/notifications.js";
+import { initReports } from "./js/reports.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuuzbs5EV8FUWeP234d51sne5aXTvgtw0",
@@ -1919,6 +1940,27 @@ window.saveRegionsSettings = async function() {
 
 // ===== INICJALIZACJA MODUŁU POWIADOMIEŃ =====
 initNotifications({ db, auth, addDoc, collection, getDocs, getDoc, doc, query, orderBy, limit, deleteDoc, updateDoc, toast });
+
+// ===== INICJALIZACJA MODUŁU ZGŁOSZEŃ =====
+initReports({ db, auth, addDoc, collection, getDocs, getDoc, doc, query, orderBy, limit, where, updateDoc, onSnapshot, serverTimestamp: null, toast });
+
+// Rozszerz go() o obsługę modułu zgłoszeń i ustawień kategorii
+const _origGo2 = window.go;
+window.go = function(id, el) {
+  _origGo2(id, el);
+  if (id === 'reports-module') {
+    if (typeof window.initReportsModule === 'function') window.initReportsModule();
+  }
+  if (id === 'settings') {
+    // Załaduj kategorie zgłoszeń jeśli sekcja jest otwarta
+    setTimeout(() => {
+      const catDetails = document.getElementById('report-categories-details');
+      if (catDetails && catDetails.open && typeof window.loadReportCategoriesSettings === 'function') {
+        window.loadReportCategoriesSettings();
+      }
+    }, 100);
+  }
+};
 
 // =====================================================
 // DASHBOARD — DANE RZECZYWISTE Z FIRESTORE
